@@ -1,12 +1,12 @@
 // apis/axios.js
 
-import axios from "axios";
-import { useAuthStore } from "../stores/useAuthStore";
+import axios from 'axios';
+import { useAuthStore } from '../stores/useAuthStore';
 
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  //baseURL: import.meta.env.VITE_API_URL,
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 
@@ -18,7 +18,7 @@ instance.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error),
+  (error) => Promise.reject(error)
 );
 
 export default instance;
