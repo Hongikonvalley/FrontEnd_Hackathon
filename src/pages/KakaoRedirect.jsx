@@ -14,6 +14,12 @@ const KakaoRedirect = () => {
     try {
       console.log('3. 백엔드에 코드를 보내서 토큰을 요청합니다.');
 
+      console.log('백엔드 api키:', import.meta.env.VITE_API_URL);
+      console.log('카카오 api 키:', import.meta.env.VITE_KAKAO_API_KEY);
+      console.log(
+        '카카오 리다이렉트 URI:',
+        import.meta.env.VITE_KAKAO_REDIRECT_URI
+      );
       const response = await login(code); //이게문제인듯
 
       console.log('✅ login() 응답 성공'); // ❌ 안 나올 거야

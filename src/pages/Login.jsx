@@ -1,3 +1,4 @@
+// src/pages/Login.jsx
 import React from "react";
 import kakaoLogo from "../assets/kakao_logo.png";
 
