@@ -22,7 +22,7 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/main" element={<Main />} />
           <Route path="/mypage" element={<MyPage />} />
-          <Route path="/store" element={<StoreDetail />} />
+          <Route path="/store" element={<Stores />} />
           {/* Layout 안에 다른 페이지를 추가하려면 여기에 Route를 추가하세요 */}
         </Route>
       </Routes>

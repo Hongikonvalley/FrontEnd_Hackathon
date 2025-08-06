@@ -1,4 +1,4 @@
-const StoreDetail = () => {
+const StoreCard = () => {
   return (
     <div>
       <h1>Store Detail Page</h1>
@@ -7,4 +7,4 @@ const StoreDetail = () => {
   );
 };
 
-export default StoreDetail;
+export default StoreCard;
