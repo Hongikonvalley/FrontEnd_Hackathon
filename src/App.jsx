@@ -7,7 +7,9 @@ import Login from './pages/Login.jsx';
 import KakaoRedirect from './pages/KakaoRedirect.jsx';
 import Main from './pages/Main.jsx';
 import MyPage from './pages/MyPage.jsx';
+import Coupon from './pages/Coupon.jsx';
 import Stores from './pages/Stores.jsx';
+import Favorite from './pages/Favorite.jsx';
 import './index.css';
 
 function App() {
@@ -23,7 +25,8 @@ function App() {
           <Route path="/main" element={<Main />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/store" element={<Stores />} />
-          {/* Layout 안에 다른 페이지를 추가하려면 여기에 Route를 추가하세요 */}
+          <Route path="/favorite" element={<Favorite />} />
+          <Route path="/coupon" element={<Coupon />} />
         </Route>
       </Routes>
     </BrowserRouter>
