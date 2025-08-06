@@ -1,12 +1,14 @@
 // src/App.jsx
 
-import { useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Layout from "./components/Layout";
-import Login from "./pages/Login.jsx";
-import KakaoRedirect from "./pages/KakaoRedirect.jsx";
-import Main from "./pages/Main.jsx";
-import "./index.css";
+import { useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
+import Login from './pages/Login.jsx';
+import KakaoRedirect from './pages/KakaoRedirect.jsx';
+import Main from './pages/Main.jsx';
+import MyPage from './pages/MyPage.jsx';
+import Stores from './pages/Stores.jsx';
+import './index.css';
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Login />} />
           <Route path="/main" element={<Main />} />
+          <Route path="/mypage" element={<MyPage />} />
+          <Route path="/store" element={<StoreDetail />} />
           {/* Layout 안에 다른 페이지를 추가하려면 여기에 Route를 추가하세요 */}
         </Route>
       </Routes>
