@@ -17,7 +17,7 @@ const SearchBar = () => {
         id="search"
         type="text"
         value={query}
-        placeholder="일찍 일어나는 새가 벌레를 잡는다"
+        placeholder="Search"
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
