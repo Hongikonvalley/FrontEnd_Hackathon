@@ -16,21 +16,37 @@ const Navbar = () => {
 
   return (
     <div>
-      <header className="fixed bottom-0 bg-amber-200 w-full flex justify-between items-center p-4 border-b">
+      <header className="fixed bottom-0 bg-white w-full flex justify-between items-center py-[16px] px-[40px] border-b inset-shadow-sm">
         <Link to="/main" className="text-xl font-bold">
-          more;ing
+          <img
+            src="/Home.svg"
+            alt="Main"
+            className="w-[40px] h-[40px] object-cover"
+          />
         </Link>
 
         <Link to="/favorite" className="text-xl font-bold">
-          즐겨찾기
+          <img
+            src="/Heart.svg"
+            alt="Favorite"
+            className="w-[40px] h-[40px] object-cover"
+          />
         </Link>
 
         <Link to="/coupon" className="text-xl font-bold">
-          쿠폰
+          <img
+            src="/Loyalty-Card.svg"
+            alt="Cupon"
+            className="w-[40px] h-[40px] object-cover"
+          />
         </Link>
 
         <Link to="/mypage" className="text-xl font-bold">
-          마이페이지
+          <img
+            src="/Human-Head.svg"
+            alt="MyPage"
+            className="w-[40px] h-[40px] object-cover"
+          />
         </Link>
       </header>
     </div>
