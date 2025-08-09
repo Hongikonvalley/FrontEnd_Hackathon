@@ -2,8 +2,15 @@
 
 import React from 'react';
 import SearchBar from '../components/SearchBar';
+import { useNavigate } from 'react-router-dom';
 
 const Main = () => {
+  const navigate = useNavigate();
+
+  const goToStores = () => {
+    navigate('/stores');
+  };
+
   return (
     // 페이지 전체 배경 설정
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -23,6 +30,12 @@ const Main = () => {
           <p className="text-gray-500 mt-2">
             Category ☕카페 🍞베이커리 🍱식당
           </p>
+          <button
+            onClick={goToStores}
+            className="text-blue-600 hover:underline mt-4 font-semibold cursor-pointer"
+          >
+            전체 매장 목록 보기
+          </button>
         </div>
 
         {/* 중단 2개 박스 컨테이너 (Flexbox) */}

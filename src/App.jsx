@@ -1,6 +1,6 @@
 // src/App.jsx
 
-import { useState } from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Login from './pages/Login.jsx';
@@ -10,6 +10,7 @@ import MyPage from './pages/MyPage.jsx';
 import Coupon from './pages/Coupon.jsx';
 import Stores from './pages/Stores.jsx';
 import Favorite from './pages/Favorite.jsx';
+import StoreDetail from './pages/StoreDetail.jsx';
 import './index.css';
 
 function App() {
@@ -27,6 +28,8 @@ function App() {
           <Route path="/store" element={<Stores />} />
           <Route path="/favorite" element={<Favorite />} />
           <Route path="/coupon" element={<Coupon />} />
+          <Route path="/stores" element={<Stores />} />
+          <Route path="/store/:id" element={<StoreDetail />} />
         </Route>
       </Routes>
     </BrowserRouter>
