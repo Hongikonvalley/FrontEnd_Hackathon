@@ -12,12 +12,12 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="dt:w-[593px] ph:w-[100px] h-[41px]  px-[11px] py-[9px] justify-between items-center rounded-[6px] border-[#D1D5DB] border-[1px] flex">
+    <div className="w-full h-[40px] bg-white px-[10px] py-[10px] justify-between items-center rounded-[20px] flex mt-[16px]">
       <input
         id="search"
         type="text"
         value={query}
-        placeholder="Search"
+        placeholder="지금 떠오르는 메뉴를 검색해보세요"
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
@@ -27,7 +27,7 @@ const SearchBar = () => {
         className="flex w-full"
       />
       <button type="button" onClick={handleSearch}>
-        <img src="/search.svg" className="flex content-end cursor-pointer" />
+        <img src="/Search.png" className="flex content-end cursor-pointer" />
       </button>
     </div>
   );
