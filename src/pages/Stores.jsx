@@ -17,20 +17,21 @@ const normalize = (s = '') =>
 const matches = (name, q) => normalize(name).includes(normalize(q));
 
 const Stores = () => {
-  useEffect(() => {
-    (async () => {
-      try {
-        const r = await instance.get('/stores');
-        console.log(
-          '[PING] /stores OK',
-          r.status,
-          Array.isArray(r.data) ? r.data.length : r.data
-        );
-      } catch (e) {
-        console.error('[PING] /stores FAIL', e);
-      }
-    })();
-  }, []);
+  // PING
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const r = await instance.get('/stores');
+  //       console.log(
+  //         '[PING] /stores OK',
+  //         r.status,
+  //         Array.isArray(r.data) ? r.data.length : r.data
+  //       );
+  //     } catch (e) {
+  //       console.error('[PING] /stores FAIL', e);
+  //     }
+  //   })();
+  // }, []);
 
   // 내비바 숨김
   const { setShowNavBar } = useOutletContext();
@@ -90,6 +91,10 @@ const Stores = () => {
       </div>
 
       {/* 검색 결과 부분 */}
+      <div className="flex flex-row mb-[8px] p-[6px]">
+        <p className="font-bold">{name}</p>
+        <p>의 검색 결과입니다.</p>
+      </div>
       <div className="flex flex-col items-center gap-6 w-full max-w-4xl mx-auto">
         {/* stores 배열의 각 item을 store라는 이름으로 StoreCard에 전달 */}
         {filteredStores.map((store) => (
