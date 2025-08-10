@@ -7,7 +7,7 @@ const SearchBar = () => {
 
   const handleSearch = (e) => {
     if (query.trim() === '') return;
-    navigate(`/products?name=${encodeURIComponent(query)}`);
+    navigate(`/stores?name=${encodeURIComponent(query)}`);
     setQuery('');
   };
 
