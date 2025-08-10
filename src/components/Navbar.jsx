@@ -16,7 +16,7 @@ const Navbar = () => {
 
   return (
     <div>
-      <header className="fixed bottom-0 bg-white w-full flex justify-between items-center py-[16px] px-[40px] border-b inset-shadow-sm">
+      <header className="fixed bottom-0 bg-white w-full flex justify-between items-center pb-[20px] pt-[16px] px-[40px] border-b inset-shadow-sm">
         <Link to="/main" className="text-xl font-bold">
           <img
             src="/Home.svg"
