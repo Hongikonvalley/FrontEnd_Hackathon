@@ -1,6 +1,7 @@
 // src/App.jsx
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Login from './pages/Login.jsx';
@@ -12,6 +13,7 @@ import Stores from './pages/Stores.jsx';
 import Favorite from './pages/Favorite.jsx';
 import StoreDetail from './pages/StoreDetail.jsx';
 import './index.css';
+import Navbar from './components/Navbar';
 
 function App() {
   return (
