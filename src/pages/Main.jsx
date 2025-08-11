@@ -1,11 +1,20 @@
-// src/pages/Main.jsx
-
-import React from 'react';
-import SearchBar from '../components/SearchBar';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import SearchBar from '../components/SearchBar';
 
 const Main = () => {
   const navigate = useNavigate();
+
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const handleTimeSelect = (timeRange) => {
+    setSelectedTime((prev) => (prev === timeRange ? null : timeRange));
+  };
+
+  const handleCategorySelect = (category) => {
+    setSelectedCategory((prev) => (prev === category ? null : category));
+  };
 
   const goToStores = () => {
     navigate('/stores');
@@ -26,29 +35,39 @@ const Main = () => {
           <p>좋은 아침이에요</p>
           <p>오늘은 어디에서 시작할까요?</p>
         </div>
-        <SearchBar />
+
+        <SearchBar
+          selectedTime={selectedTime}
+          selectedCategory={selectedCategory}
+        />
 
         {/* 토글 항목 */}
         <div className="flex flex-row justify-between mt-[16px]">
           {/* Time Group */}
           <div className="flex flex-row items-center gap-[6px] mt-[16px]">
             <p className="text-[12px]">Time</p>
-            <button className="bg-white p-2 w-fit h-[20px] rounded-[20px] flex justify-center items-center hover:cursor-pointer text-[12px]">
-              now
-            </button>
-            <button className="bg-white w-fit p-2 h-[20px] rounded-[20px] flex justify-center items-center hover:cursor-pointer text-[12px]">
+            <button
+              onClick={() => handleTimeSelect('6-7')}
+              className={`p-2 w-fit h-[20px] rounded-[20px] flex justify-center items-center text-[12px] ${selectedTime === '6-7' ? 'bg-yellow-400 font-bold' : 'bg-white'}`}
+            >
               6
             </button>
-            <button className="bg-white w-fit p-2 h-[20px] rounded-[20px] flex justify-center items-center hover:cursor-pointer text-[12px]">
+            <button
+              onClick={() => handleTimeSelect('7-8')}
+              className={`p-2 w-fit h-[20px] rounded-[20px] flex justify-center items-center text-[12px] ${selectedTime === '7-8' ? 'bg-yellow-400 font-bold' : 'bg-white'}`}
+            >
               7
             </button>
-            <button className="bg-white w-fit p-2 h-[20px] rounded-[20px] flex justify-center items-center hover:cursor-pointer text-[12px]">
+            <button
+              onClick={() => handleTimeSelect('8-9')}
+              className={`p-2 w-fit h-[20px] rounded-[20px] flex justify-center items-center text-[12px] ${selectedTime === '8-9' ? 'bg-yellow-400 font-bold' : 'bg-white'}`}
+            >
               8
             </button>
           </div>
 
           {/* Place Group */}
-          <div className="flex flex-row items-center gap-[6px] mt-[16px]">
+          <div className="flex flex-row items-center gap-[6px]">
             <p className="text-[12px]">Place</p>
             <button className="bg-white p-2 w-fit h-[20px] rounded-[20px] flex justify-center items-center hover:cursor-pointer text-[12px]">
               my
@@ -75,10 +94,9 @@ const Main = () => {
       </div>
 
       {/* 쿠폰 박스 */}
-      <div className="border-[#FCE6A4] border-3 rounded-[20px] mx-[30px] my-[16px] p-[18px] flex flex-col">
+      <div className="border-[#FCE6A4] border-2 rounded-[20px] mx-[30px] my-[16px] p-[18px] flex flex-col">
         <p className="font-bold text-[20px]">윤서님 주변의 쿠폰</p>
         <div className="flex flex-row justify-between items-center">
-          {/* 이미지 */}
           <div className="flex flex-row gap-[16px] ">
             <img
               src="/hdcafe.png"
@@ -90,38 +108,36 @@ const Main = () => {
               alt="coupon"
               className="w-[120px] h-[120px] rounded-[15px] object-cover mt-[16px]"
             />
-            <p className="flex content-end items-center text-[12px] font-bold">
-              더보기
-            </p>
+            <p className="flex items-end text-[12px] font-bold">더보기</p>
           </div>
         </div>
       </div>
 
       {/* HOT 얼리버드 */}
-      <div className="border-[#FCE6A4] border-3 rounded-[20px] mx-[30px] my-[16px] p-[18px] flex flex-col">
+      <div className="border-[#FCE6A4] border-2 rounded-[20px] mx-[30px] my-[16px] p-[18px] flex flex-col">
         <p className="font-bold text-[20px]">오늘의 HOT🔥 얼리버드</p>
-        <div className="flex flex-row content-center items-center">
+        <div className="flex flex-row items-center">
           <img
             src="/gabiae.png"
             alt="hot"
             className="w-[120px] h-[120px] rounded-[15px] object-cover mt-[16px]"
           />
-          <div className="pl-[16px]">
+          <div className="pl-[16px] flex-grow">
             <div className="flex flex-row items-center mt-[16px]">
               <p className="text-[20px] font-black">가비애</p>
-              <p className="text-[20px]">⭐4.9</p>
+              <p className="text-[20px] ml-2">⭐4.9</p>
             </div>
             <p className="text-[14px] font-medium"># 모든 자리에 콘센트 있음</p>
             <p className="text-[14px] font-medium"># 24시간 오픈</p>
             <p className="text-[12px]">홍대입구역에서 5분</p>
-            <button
-              className="bg-[#FCE6A4] w-full p-2 h-[30px] rounded-[30px] flex justify-center items-center hover:cursor-pointer text-[14px] font-bold mt-[6px]"
-              onClick={goToStores}
-            >
-              얼리버드 되기
-            </button>
           </div>
         </div>
+        <button
+          className="bg-[#FCE6A4] w-full p-2 h-[30px] rounded-[30px] flex justify-center items-center hover:cursor-pointer text-[14px] font-bold mt-[6px]"
+          onClick={goToStores}
+        >
+          얼리버드 되기
+        </button>
       </div>
     </>
   );
