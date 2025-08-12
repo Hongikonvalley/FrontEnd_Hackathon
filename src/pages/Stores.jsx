@@ -6,7 +6,11 @@ import {
 } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { stores } from '../data/mockStores'; // 1. Mock Data를 다시 import 합니다.
-import { fetchAllStores, getStoresByName } from '../apis/stores';
+import {
+  fetchAllStores,
+  getStoresByName,
+  getStoresByFilter,
+} from '../apis/stores';
 import StoreCard from '../components/StoreCard';
 
 const Stores = () => {
@@ -14,65 +18,88 @@ const Stores = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // URL에서 모든 필터 값을 가져옵니다.
-  const name = searchParams.get('name');
-  const time = searchParams.get('time');
-  const category = searchParams.get('category');
-
   // 내비바 숨김 처리
   useEffect(() => {
     setShowNavBar(false);
     return () => setShowNavBar(true);
   }, [setShowNavBar]);
 
-  /*
-  // 🔽 나중에 실제 API를 사용할 코드 (주석 처리)
+  // URL에서 모든 필터 값을 가져옵니다.
+
+  const name = (searchParams.get('name') ?? '').trim();
+  const time = searchParams.get('time');
+  const category = searchParams.get('category');
+
+  // 메타 조회
+  const { data: meta } = useQuery({
+    queryKey: ['search/filter'],
+    queryFn: getStoresByFilter(),
+  });
+  const categories = meta?.categories ?? [];
+  const times = meta?.times ?? [];
+
   const {
-    data: storesFromAPI = [],
+    data: stores = [],
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['stores', name, time, category], // 모든 필터 값을 key로 사용
+    queryKey: ['stores', { name, time, category }],
     queryFn: () => {
-      // 실제 API 호출 시에는 백엔드에 모든 필터를 넘겨줘야 합니다.
-      // 예: return getStoresByFilter({ name, time, category });
-      return name ? getStoresByName(name) : fetchAllStores()
+      getStoresByName(name);
     },
   });
 
-  if (isLoading) return <div className="p-4 text-center">검색 중...</div>;
-  if (error) return <div className="p-4 text-center text-red-500">오류가 발생했습니다: {error.message}</div>;
-  */
-
-  // 🔽 Mock Data를 사용하도록 다시 변경
+  // 클라이언트 측 필터링
   const filteredStores = useMemo(() => {
-    let filteredData = stores;
-
-    // 시간 필터
+    let data = stores;
     if (time) {
       const [startHour] = time.split('-').map(Number);
-      filteredData = filteredData.filter((store) => {
+      data = data.filter((store) => {
         const openHour = parseInt(store.openTime.split(':')[0]);
         return openHour >= startHour && openHour < startHour + 1;
       });
     }
-
-    // 카테고리 필터
     if (category) {
-      filteredData = filteredData.filter(
-        (store) => store.category === category
-      );
+      data = data.filter((store) => store.category === category);
     }
+    return data;
+  }, [stores, time, category]);
 
-    // 이름(검색어) 필터
-    if (name) {
-      filteredData = filteredData.filter((store) =>
-        store.name.toLowerCase().includes(name.toLowerCase())
-      );
-    }
+  if (isLoading) return <div className="p-4 text-center">검색 중...</div>;
+  if (error)
+    return (
+      <div className="p-4 text-center text-red-500">
+        오류가 발생했습니다: {error.message}
+      </div>
+    );
 
-    return filteredData;
-  }, [name, time, category]);
+  // // // 🔽 Mock Data를 사용하도록 다시 변경
+  // const filteredStores = useMemo(() => {
+  //   let filteredData = stores;
+
+  //   // 시간 필터
+  //   if (time) {
+  //     const [startHour] = time.split('-').map(Number);
+  //     filteredData = filteredData.filter((store) => {
+  //       const openHour = parseInt(store.openTime.split(':')[0]);
+  //       return openHour >= startHour && openHour < startHour + 1;
+  //     });
+  //   }
+
+  //   // 카테고리 필터
+  //   if (category) {
+  //     filteredData = filteredData.filter((store) => categories === category);
+  //   }
+
+  //   // 이름(검색어) 필터
+  //   if (name) {
+  //     filteredData = filteredData.filter((store) =>
+  //       store.name.toLowerCase().includes(name.toLowerCase())
+  //     );
+  //   }
+
+  //   return filteredData;
+  // }, [name, time, category]);
 
   return (
     <div className="p-6 bg-white min-h-screen">
