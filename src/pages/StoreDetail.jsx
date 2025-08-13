@@ -54,12 +54,28 @@ const StoreDetail = () => {
   return (
     <div className="p-6">
       {/* 뒤로가기 버튼 */}
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-4 text-gray-600 hover:text-black"
-      >
-        &larr; 목록으로 돌아가기
-      </button>
+      <div className="flex justify-between items-center mb-4">
+        {/* 왼쪽: 뒤로가기 버튼 */}
+        <img
+          src="/Back.svg"
+          alt="Back"
+          className="w-[36px] h-[36px] cursor-pointer"
+          onClick={() => navigate(-1)} // 뒤로가기
+        />
+
+        {/* 가운데: 제목 */}
+        <h1 className="text-2xl font-bold">more;ing</h1>
+
+        {/* 오른쪽: 제목을 중앙으로 밀어주기 위한 보이지 않는 공간 */}
+        <div className="w-[36px] h-[36px]"></div>
+      </div>
+
+      {/*오전 7시 방문 얼리버드 10% 할인*/}
+      <div className="flex justify-between items-center mb-2">
+        <div className="bg-[#FCE6A4] rounded-lg shadow-md text-black text-center p-2 w-fit">
+          오전 7시 방문 얼리버드 10% 할인
+        </div>
+      </div>
 
       {/* 1. 헤더: 매장 이름과 별점 */}
       <div className="flex justify-between items-center mb-2">
@@ -149,7 +165,7 @@ const StoreDetail = () => {
       </div>
 
       {/* 7. AI 리뷰 요약 */}
-      <div className="bg-white p-4 rounded-lg shadow-md mb-6 border-l-4 border-yellow-400">
+      <div className="bg-white p-4 rounded-lg shadow-md mb-6 border-l-4 border-[#FCE6A4]">
         <h3 className="text-lg font-bold mb-2">🤖 AI 리뷰 요약</h3>
         <p className="text-gray-700">{augmentedStore.aiSummary}</p>
       </div>
