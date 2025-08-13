@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, createSearchParams } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
+import FilterButton from '../components/FilterButton';
 
 const Main = () => {
   const navigate = useNavigate();
 
   const [selectedTime, setSelectedTime] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  // 나중엔 메타 API(/search/filter)로 대체 가능
+  const timeSlots = ['06:00-07:00', '07:00-08:00', '08:00-09:00'];
+  const categories = ['카페', '브런치', '베이커리'];
 
   const handleTimeSelect = (timeRange) => {
     setSelectedTime((prev) => (prev === timeRange ? null : timeRange));
@@ -17,7 +22,10 @@ const Main = () => {
   };
 
   const goToStores = () => {
-    navigate('/stores');
+    const params = {};
+    if (selectedTime) params.time = selectedTime;
+    if (selectedCategory) params.category = selectedCategory;
+    navigate({ pathname: '/stores', search: `?${createSearchParams(params)}` });
   };
 
   return (
@@ -44,37 +52,30 @@ const Main = () => {
         {/* 토글 항목 */}
         <div className="flex flex-row justify-between mt-[16px]">
           {/* Time Group */}
-          <div className="flex flex-row items-center gap-[6px] mt-[16px]">
+          <div className="flex flex-row items-center gap-[6px]">
             <p className="text-[12px]">Time</p>
-            <button
-              onClick={() => handleTimeSelect('6-7')}
-              className={`p-2 w-fit h-[20px] rounded-[20px] flex justify-center items-center text-[12px] ${selectedTime === '6-7' ? 'bg-yellow-400 font-bold' : 'bg-white'}`}
-            >
-              6
-            </button>
-            <button
-              onClick={() => handleTimeSelect('7-8')}
-              className={`p-2 w-fit h-[20px] rounded-[20px] flex justify-center items-center text-[12px] ${selectedTime === '7-8' ? 'bg-yellow-400 font-bold' : 'bg-white'}`}
-            >
-              7
-            </button>
-            <button
-              onClick={() => handleTimeSelect('8-9')}
-              className={`p-2 w-fit h-[20px] rounded-[20px] flex justify-center items-center text-[12px] ${selectedTime === '8-9' ? 'bg-yellow-400 font-bold' : 'bg-white'}`}
-            >
-              8
-            </button>
+            {timeSlots.map((time) => (
+              <FilterButton
+                key={time}
+                label={time}
+                selected={selectedTime === time}
+                onClick={() => handleTimeSelect(time)}
+              />
+            ))}
           </div>
 
-          {/* Place Group */}
+          {/* Category Group */}
           <div className="flex flex-row items-center gap-[6px]">
-            <p className="text-[12px]">Place</p>
-            <button className="bg-white p-2 w-fit h-[20px] rounded-[20px] flex justify-center items-center hover:cursor-pointer text-[12px]">
-              my
-            </button>
-            <button className="bg-white w-fit p-2 h-[20px] rounded-[20px] flex justify-center items-center hover:cursor-pointer text-[12px]">
-              new
-            </button>
+            <p className="text-[12px]">Category</p>
+            {categories.map((category) => (
+              <FilterButton
+                key={category}
+                label={category}
+                selected={selectedCategory === category}
+                onClick={() => handleCategorySelect(category)}
+                disabled={category === '베이커리'} // 예시로 베이커리는 비활성화
+              />
+            ))}
           </div>
         </div>
 
