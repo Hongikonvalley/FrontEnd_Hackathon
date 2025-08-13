@@ -15,8 +15,7 @@ export const fetchAllStores = async () => {
     // --- 🤔 1단계: API 요청 직전의 전체 URL 확인 ---
     console.log('1. [fetchAllStores] API 요청 URL:', requestUrl);
 
-    const { data } = await instance.get('/search/stores', {
-      // '/api/v1' 제거
+    const { data } = await instance.get('api/v1/search/stores', {
       params: { page: 1, size: 50 },
     });
 
@@ -58,13 +57,13 @@ export const getStoresFiltered = async ({
   params.page = page;
   params.size = size;
 
-  const { data } = await instance.get('/search/stores', { params });
+  const { data } = await instance.get('api/v1/search/stores', { params });
   return pickList(data); // ← 원본 그대로
 };
 
 export const getStoreById = async (id) => {
   try {
-    const { data } = await instance.get(`/stores/${id}`); // '/api/v1' 제거
+    const { data } = await instance.get(`api/v1/stores/${id}`); // '/api/v1' 제거
     return data?.result ?? null;
   } catch (e) {
     console.error('[getStoreById] FAIL:', e);
@@ -76,7 +75,7 @@ export const getStoresByName = async (query) => {
   const q = (query ?? '').trim();
   if (!q) return [];
   try {
-    const { data } = await instance.get('/search/stores', {
+    const { data } = await instance.get('api/v1/search/stores', {
       // '/api/v1' 제거
       params: { q },
     });
