@@ -119,7 +119,7 @@ const StoreDetail = () => {
 
       {/* 5. 포토리뷰 (사이드 스크롤) */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4">포토리뷰</h2>
+        <h2 className="text-2xl font-bold mb-4">포토 리뷰</h2>
         <div className="flex overflow-x-auto gap-4 pb-4">
           {augmentedStore.galleryImages.map((src, index) => (
             <div key={index} className="flex-shrink-0 w-40 h-40">
@@ -135,11 +135,12 @@ const StoreDetail = () => {
 
       {/* 6. 방문자 리뷰 키워드 */}
       <div className="mb-6">
+        <h2 className="text-2xl font-bold mb-4">방문자 리뷰</h2>
         <div className="flex flex-wrap gap-2">
           {augmentedStore.keywords.map((keyword) => (
             <span
               key={keyword}
-              className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full"
+              className="bg-white text-black text-sm font-medium px-3 py-1 rounded-full shadow-md"
             >
               # {keyword}
             </span>

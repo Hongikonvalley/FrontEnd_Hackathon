@@ -28,6 +28,10 @@ const Main = () => {
     navigate({ pathname: '/stores', search: `?${createSearchParams(params)}` });
   };
 
+  const goToMockStores = () => {
+    navigate('/stores_mock');
+  };
+
   return (
     <>
       {/* header div */}
@@ -135,7 +139,8 @@ const Main = () => {
         </div>
         <button
           className="bg-[#FCE6A4] w-full p-2 h-[30px] rounded-[30px] flex justify-center items-center hover:cursor-pointer text-[14px] font-bold mt-[6px]"
-          onClick={goToStores}
+          onClick={goToMockStores}
+          //onClick={goToStores}
         >
           얼리버드 되기
         </button>
