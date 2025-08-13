@@ -5,11 +5,10 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { stores } from '../data/mockStores'; // 1. Mock Data를 다시 import 합니다.
 import {
   fetchAllStores,
   getStoresByName,
-  getStoresByFilter,
+  getStoresFiltered,
 } from '../apis/stores';
 import StoreCard from '../components/StoreCard';
 
@@ -18,6 +17,20 @@ const Stores = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  // 확인
+  useEffect(() => {
+    (async () => {
+      try {
+        const list = await fetchAllStores();
+        console.log('[DEBUG] ALL STORES:', list);
+        console.log('[DEBUG] COUNT:', list.length);
+        if (list[0]) console.log('[DEBUG] FIRST:', list[0]);
+      } catch (e) {
+        console.error('[DEBUG] fetchAllStores FAIL', e);
+      }
+    })();
+  }, []);
+
   // 내비바 숨김 처리
   useEffect(() => {
     setShowNavBar(false);
@@ -25,45 +38,37 @@ const Stores = () => {
   }, [setShowNavBar]);
 
   // URL에서 모든 필터 값을 가져옵니다.
+  const filters = useMemo(
+    () => ({
+      name: (searchParams.get('name') ?? '').trim(),
+      time: searchParams.get('time') ?? '',
+      category: searchParams.get('category') ?? '',
+    }),
+    [searchParams]
+  );
 
-  const name = (searchParams.get('name') ?? '').trim();
-  const time = searchParams.get('time');
-  const category = searchParams.get('category');
-
-  // 메타 조회
-  const { data: meta } = useQuery({
-    queryKey: ['search/filter'],
-    queryFn: getStoresByFilter(),
-  });
-  const categories = meta?.categories ?? [];
-  const times = meta?.times ?? [];
+  // // 메타 조회
+  // const { data: meta } = useQuery({
+  //   queryKey: ['search/filter'],
+  //   queryFn: getStoresByFilter,
+  // });
+  // const categories = meta?.categories ?? [];
+  // const times = meta?.times ?? [];
 
   const {
     data: stores = [],
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['stores', { name, time, category }],
+    queryKey: ['stores', filters.name, filters.time, filters.category],
     queryFn: () => {
-      getStoresByName(name);
+      const hasAnyFilter =
+        !!filters.name || !!filters.time || !!filters.category;
+      // ★ 반드시 반환해야 함
+      return hasAnyFilter ? getStoresFiltered(filters) : fetchAllStores();
     },
+    keepPreviousData: true,
   });
-
-  // 클라이언트 측 필터링
-  const filteredStores = useMemo(() => {
-    let data = stores;
-    if (time) {
-      const [startHour] = time.split('-').map(Number);
-      data = data.filter((store) => {
-        const openHour = parseInt(store.openTime.split(':')[0]);
-        return openHour >= startHour && openHour < startHour + 1;
-      });
-    }
-    if (category) {
-      data = data.filter((store) => store.category === category);
-    }
-    return data;
-  }, [stores, time, category]);
 
   if (isLoading) return <div className="p-4 text-center">검색 중...</div>;
   if (error)
@@ -72,34 +77,6 @@ const Stores = () => {
         오류가 발생했습니다: {error.message}
       </div>
     );
-
-  // // // 🔽 Mock Data를 사용하도록 다시 변경
-  // const filteredStores = useMemo(() => {
-  //   let filteredData = stores;
-
-  //   // 시간 필터
-  //   if (time) {
-  //     const [startHour] = time.split('-').map(Number);
-  //     filteredData = filteredData.filter((store) => {
-  //       const openHour = parseInt(store.openTime.split(':')[0]);
-  //       return openHour >= startHour && openHour < startHour + 1;
-  //     });
-  //   }
-
-  //   // 카테고리 필터
-  //   if (category) {
-  //     filteredData = filteredData.filter((store) => categories === category);
-  //   }
-
-  //   // 이름(검색어) 필터
-  //   if (name) {
-  //     filteredData = filteredData.filter((store) =>
-  //       store.name.toLowerCase().includes(name.toLowerCase())
-  //     );
-  //   }
-
-  //   return filteredData;
-  // }, [name, time, category]);
 
   return (
     <div className="p-6 bg-white min-h-screen">
@@ -119,10 +96,8 @@ const Stores = () => {
       </div>
 
       <div className="flex flex-col items-center gap-6 w-full max-w-4xl mx-auto">
-        {filteredStores.length > 0 ? (
-          filteredStores.map((store) => (
-            <StoreCard key={store.id} store={store} />
-          ))
+        {stores.length > 0 ? (
+          stores.map((store) => <StoreCard key={store.id} store={store} />)
         ) : (
           <div className="font-Inter flex justify-center mt-[32px] text-xl">
             검색 결과가 없습니다🥺
