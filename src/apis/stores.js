@@ -11,22 +11,33 @@ const pickList = (data) =>
 // 확인용 전체 매장 조회
 export const fetchAllStores = async () => {
   try {
-    const { data, status } = await instance.get('/search/stores', {
-      params: { page: 1, size: 50 }, // ← 강제 지정
+    const requestUrl = instance.defaults.baseURL + '/search/stores';
+    // --- 🤔 1단계: API 요청 직전의 전체 URL 확인 ---
+    console.log('1. [fetchAllStores] API 요청 URL:', requestUrl);
+
+    const { data } = await instance.get('/search/stores', {
+      // '/api/v1' 제거
+      params: { page: 1, size: 50 },
     });
-    console.log('[DEBUG][fetchAllStores] status:', status);
-    console.log('[DEBUG][fetchAllStores] raw:', data);
 
     const items = Array.isArray(data?.result?.items) ? data.result.items : [];
-    console.log('[DEBUG][fetchAllStores] items.length:', items.length);
+
+    // --- 🤔 2단계: 백엔드가 보낸 원본 데이터 전체 확인 ---
+    // 이 로그를 통해 백엔드가 어떤 구조로 데이터를 보냈는지 정확히 알 수 있습니다.
+    console.log('2. [fetchAllStores] 백엔드로부터 받은 원본 데이터:', data);
+
+    // --- 🤔 3단계: 실제 파싱된 아이템 개수 확인 ---
+    console.log('3. [fetchAllStores] 파싱된 아이템 개수:', items.length);
+
     if (!items.length) {
       console.warn(
-        '[DEBUG][fetchAllStores] 빈 목록. 쿼리/권한/도메인/프록시 확인 필요'
+        '4. [fetchAllStores] 빈 목록 수신. 백엔드 DB에 데이터가 없거나, 로그인 토큰이 필요한 API일 수 있습니다.'
       );
     }
-    return items; // 정규화 안 쓰는 버전
+
+    return pickList(data);
   } catch (e) {
-    console.error('[DEBUG][fetchAllStores] FAIL:', e);
+    console.error('[fetchAllStores] FAIL:', e);
     return [];
   }
 };
@@ -51,14 +62,27 @@ export const getStoresFiltered = async ({
   return pickList(data); // ← 원본 그대로
 };
 
-export const getStoresById = async (id) => {
-  const { data } = await instance.get(`/stores/${id}`);
-  return data?.result ?? null;
+export const getStoreById = async (id) => {
+  try {
+    const { data } = await instance.get(`/stores/${id}`); // '/api/v1' 제거
+    return data?.result ?? null;
+  } catch (e) {
+    console.error('[getStoreById] FAIL:', e);
+    return null;
+  }
 };
 
-export const getStoresByName = async (q) => {
-  const name = (q ?? '').trim();
-  if (!name) return [];
-  const { data } = await instance.get('/search/stores', { params: { name } });
-  return pickList(data);
+export const getStoresByName = async (query) => {
+  const q = (query ?? '').trim();
+  if (!q) return [];
+  try {
+    const { data } = await instance.get('/search/stores', {
+      // '/api/v1' 제거
+      params: { q },
+    });
+    return pickList(data);
+  } catch (e) {
+    console.error('[getStoresByName] FAIL:', e);
+    return [];
+  }
 };

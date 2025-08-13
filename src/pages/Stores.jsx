@@ -38,14 +38,17 @@ const Stores = () => {
   }, [setShowNavBar]);
 
   // URL에서 모든 필터 값을 가져옵니다.
-  const filters = useMemo(
+  {
+    /*const filters = useMemo(
     () => ({
-      name: (searchParams.get('name') ?? '').trim(),
+      name: (searchParams.get('q') ?? '').trim(),
       time: searchParams.get('time') ?? '',
-      category: searchParams.get('category') ?? '',
+      category: searchParams.get('category_id') ?? '',
     }),
     [searchParams]
-  );
+  );*/
+  }
+  const filters = Object.fromEntries(searchParams.entries());
 
   // // 메타 조회
   // const { data: meta } = useQuery({
@@ -60,13 +63,18 @@ const Stores = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['stores', filters.name, filters.time, filters.category],
-    queryFn: () => {
+    //queryKey: ['stores', filters.name, filters.time, filters.category],
+    queryKey: ['stores', filters],
+
+    /*
+      queryFn: () => {
       const hasAnyFilter =
         !!filters.name || !!filters.time || !!filters.category;
       // ★ 반드시 반환해야 함
       return hasAnyFilter ? getStoresFiltered(filters) : fetchAllStores();
     },
+    */
+    queryFn: () => getStoresFiltered(filters),
     keepPreviousData: true,
   });
 
