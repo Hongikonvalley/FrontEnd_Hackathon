@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 const Header = ({ title, showBack }) => {
   const navigate = useNavigate();
   return (
-    <header className="flex flex-row itmes-center justify-between p-[20px] bg-white text-[20px]">
+    <header className="flex flex-row itmes-center justify-between px-[20px] bg-white text-[25px] m-[16px]">
       {showBack && (
         <img
           src="/Back.svg"
@@ -18,8 +18,14 @@ const Header = ({ title, showBack }) => {
       )}
       <div className="flex">
         {' '}
-        {title === 'fav' ? <div>my</div> : <></>}
-        <Link to="/main">more;ing</Link>
+        {title === 'fav' ? (
+          <div className="font-semibold px-[10px]">my</div>
+        ) : (
+          <></>
+        )}
+        <Link to="/main" className="font-head">
+          more;ing
+        </Link>
       </div>
 
       <img

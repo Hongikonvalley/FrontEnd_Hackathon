@@ -1,1 +1,14 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap');
+
+@import 'tailwindcss';
+
+/* 디자인 토큰은 @theme 안에서 정의 */
+@theme {
+  /* 브랜드 색 */
+  --color-primary: #ff9743;
+  --color-secondary: #f76f00;
+
+  /* 폰트 (이름은 자유, 쓰는 쪽은 font-<이름>) */
+  --font-sans: 'Pretendard', ui-sans-serif, system-ui, sans-serif;
+  --font-head: 'Rammetto One', sans-serif;
+}
