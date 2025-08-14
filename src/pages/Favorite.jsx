@@ -1,8 +1,9 @@
 import FavoriteCard from '../components/FavoriteCard';
-
+import Header from '../components/Header';
 const Favorite = () => {
   return (
     <div>
+      <Header title="fav" showBack={true} />
       <FavoriteCard />
       {/* body */}
       <div className="flex flex-col relative items-center justify-center text-center p-4">

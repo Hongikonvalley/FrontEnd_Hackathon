@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, createSearchParams } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
 import FilterButton from '../components/FilterButton';
+import Header from '../components/Header';
 
 const Main = () => {
   const navigate = useNavigate();
@@ -34,11 +35,7 @@ const Main = () => {
 
   return (
     <>
-      {/* header div */}
-      <div className="flex flex-row items-center justify-between mx-[30px]">
-        <div className="text-[30px]">more;ing</div>
-        <img src="/Menu.png" alt="hmb" />
-      </div>
+      <Header title="main" showBack={false} />
 
       {/* search bar div */}
       <div className="bg-[#FCE6A4]  rounded-[20px] mx-[30px] my-[16px] p-[28px] flex flex-col">
