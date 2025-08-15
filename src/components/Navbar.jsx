@@ -1,6 +1,7 @@
 import React from 'react';
-import { Link, useNavigate, Outlet } from 'react-router-dom';
+import { Link, useNavigate, Outlet, NavLink } from 'react-router-dom';
 import { useAuthStore } from '../stores/useAuthStore';
+import { useState } from 'react';
 
 const Navbar = () => {
   const { isLoggedIn, clearAuth } = useAuthStore();
@@ -17,37 +18,57 @@ const Navbar = () => {
   return (
     <div>
       <header className="fixed bottom-0 bg-white w-full flex justify-between items-center pb-[20px] pt-[16px] px-[40px] border-b inset-shadow-sm">
-        <Link to="/main" className="text-xl font-bold">
+        <NavLink
+          to="/main"
+          className={({ isActive }) =>
+            isActive ? 'filter contrast-500' : 'filter contrast-50'
+          }
+        >
           <img
             src="/Home.svg"
             alt="Main"
             className="w-[40px] h-[40px] object-cover"
           />
-        </Link>
+        </NavLink>
 
-        <Link to="/favorite" className="text-xl font-bold">
+        <NavLink
+          to="/favorite"
+          className={({ isActive }) =>
+            isActive ? 'filter contrast-500' : 'filter contrast-50'
+          }
+        >
           <img
             src="/Heart.svg"
             alt="Favorite"
             className="w-[40px] h-[40px] object-cover"
           />
-        </Link>
+        </NavLink>
 
-        <Link to="/coupon" className="text-xl font-bold">
+        <NavLink
+          to="/coupon"
+          className={({ isActive }) =>
+            isActive ? 'filter contrast-500' : 'filter contrast-50'
+          }
+        >
           <img
             src="/Loyalty-Card.svg"
             alt="Cupon"
             className="w-[40px] h-[40px] object-cover"
           />
-        </Link>
+        </NavLink>
 
-        <Link to="/mypage" className="text-xl font-bold">
+        <NavLink
+          to="/mypage"
+          className={({ isActive }) =>
+            isActive ? 'filter contrast-500' : 'filter contrast-50'
+          }
+        >
           <img
             src="/Human-Head.svg"
             alt="MyPage"
             className="w-[40px] h-[40px] object-cover"
           />
-        </Link>
+        </NavLink>
       </header>
     </div>
   );
