@@ -149,20 +149,20 @@ const StoreDetail = () => {
             AI 리뷰 요약
           </h3>
           <p className="text-gray-700">{augmentedStore.aiSummary}</p>
-        </div>
-
-        {/* 8. 대표 리뷰 */}
-        <div className="bg-white p-4 rounded-lg shadow-md">
-          <div className="flex justify-between items-center mb-2">
-            <span className="font-semibold">
-              {augmentedStore.featuredReview.author}
-            </span>
-            <div className="flex items-center gap-1">
-              <FaStar className="text-primary" />
-              <span>{augmentedStore.featuredReview.rating}</span>
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <div className="flex justify-between items-center mb-2">
+              <span className="font-semibold">
+                {augmentedStore.featuredReview.author}
+              </span>
+              <div className="flex items-center gap-1">
+                <FaStar className="text-primary" />
+                <span>{augmentedStore.featuredReview.rating}</span>
+              </div>
             </div>
+            <p className="text-gray-800">
+              {augmentedStore.featuredReview.text}
+            </p>
           </div>
-          <p className="text-gray-800">{augmentedStore.featuredReview.text}</p>
         </div>
       </div>
 
