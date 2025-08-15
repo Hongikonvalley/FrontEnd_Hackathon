@@ -33,6 +33,10 @@ const Main = () => {
     navigate('/stores_mock');
   };
 
+  const goToCoupon = () => {
+    navigate('/coupon');
+  };
+
   return (
     <>
       <Header title="main" showBack={false} />
@@ -111,7 +115,12 @@ const Main = () => {
                 alt="coupon"
                 className="w-[120px] h-[120px] rounded-[15px] object-cover mt-[16px]"
               />
-              <p className="flex items-end text-[12px] font-bold">더보기</p>
+              <button
+                className="bg-primary w-fit p-2 h-[30px] rounded-[30px] flex justify-center items-center hover:cursor-pointer text-[14px] mt-[6px]"
+                onClick={goToCoupon}
+              >
+                더보기
+              </button>
             </div>
           </div>
         </div>
@@ -138,8 +147,8 @@ const Main = () => {
           </div>
           <button
             className="bg-primary w-full p-2 h-[30px] rounded-[30px] flex justify-center items-center hover:cursor-pointer text-[14px] font-bold mt-[6px]"
-            onClick={goToMockStores}
             //onClick={goToStores}
+            onClick={goToMockStores}
           >
             얼리버드 되기
           </button>
