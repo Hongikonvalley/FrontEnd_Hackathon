@@ -105,10 +105,7 @@ const StoreDetail = () => {
 
       {/* 3. 카카오 지도 */}
       <div className="mb-6 h-64 md:h-80 rounded-lg overflow-hidden shadow-md">
-        <KakaoMap
-          lat={augmentedStore.location.latitude}
-          lng={augmentedStore.location.longitude}
-        />
+        <KakaoMap />
       </div>
 
       {/* 4. 메뉴 */}
