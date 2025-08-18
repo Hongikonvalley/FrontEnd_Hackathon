@@ -3,44 +3,53 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-const KakaoMap = ({ lat, lng }) => {
-  // lat, lng를 props로 받음
+const KakaoMap = ({ lat, lng, name }) => {
+  // 1. name을 props로 받습니다.
   useEffect(() => {
-    const JAVASCRIPT_KEY = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY;
-    const script = document.createElement('script');
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${JAVASCRIPT_KEY}&autoload=false`;
-    document.head.appendChild(script);
+    if (window.kakao && window.kakao.maps) {
+      const container = document.getElementById('map');
+      const options = {
+        center: new window.kakao.maps.LatLng(lat, lng),
+        level: 3,
+      };
+      const map = new window.kakao.maps.Map(container, options);
 
-    script.onload = () => {
-      window.kakao.maps.load(() => {
-        const container = document.getElementById('map');
-        const options = {
-          // props로 받은 lat, lng를 지도의 중심좌표로 설정
-          center: new window.kakao.maps.LatLng(lat, lng),
-          level: 3,
-        };
-        const map = new window.kakao.maps.Map(container, options);
-
-        // 마커를 생성하고 지도에 표시
-        const markerPosition = new window.kakao.maps.LatLng(lat, lng);
-        const marker = new window.kakao.maps.Marker({
-          position: markerPosition,
-        });
-        marker.setMap(map);
+      const markerPosition = new window.kakao.maps.LatLng(lat, lng);
+      const marker = new window.kakao.maps.Marker({
+        position: markerPosition,
       });
-    };
+      marker.setMap(map);
 
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, [lat, lng]); // lat, lng가 변경될 때 지도를 다시 그리도록 의존성 배열에 추가
+      // 2. 커스텀 오버레이에 표시할 내용(HTML)을 정의합니다.
+      const content = `<div style="padding:5px; background:white; border:1px solid black; border-radius: 8px; font-size:12px; font-weight:bold;">${name}</div>`;
 
-  return <div id="map" style={{ width: '100%', height: '100%' }}></div>;
+      // 3. 커스텀 오버레이를 생성합니다.
+      const customOverlay = new window.kakao.maps.CustomOverlay({
+        position: markerPosition,
+        content: content,
+        yAnchor: 2.2, // 마커 위에 오버레이가 오도록 y축 위치를 조정합니다.
+      });
+
+      // 4. 커스텀 오버레이를 지도에 표시합니다.
+      customOverlay.setMap(map);
+    }
+  }, [lat, lng, name]); // name이 변경될 때도 다시 그리도록 의존성에 추가
+
+  return (
+    <div
+      id="map"
+      style={{
+        width: '100%',
+        height: '100%',
+      }}
+    ></div>
+  );
 };
 
 KakaoMap.propTypes = {
   lat: PropTypes.number.isRequired,
   lng: PropTypes.number.isRequired,
+  name: PropTypes.string.isRequired, // name prop에 대한 유효성 검사 추가
 };
 
 export default KakaoMap;

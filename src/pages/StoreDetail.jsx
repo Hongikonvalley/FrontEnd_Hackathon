@@ -1,10 +1,10 @@
 // src/pages/StoreDetail.jsx
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { stores } from '../data/mockStores'; // Mock Data
-import KakaoMap from '../components/KakaoMap'; // 지도 컴포넌트
-
+import { useState } from 'react';
+import { stores } from '../data/mockStores';
+import KakaoMap from '../components/KakaoMap';
 import {
   FaStar,
   FaMapMarkerAlt,
@@ -12,23 +12,18 @@ import {
   FaRegImage,
   FaTimes,
 } from 'react-icons/fa';
+import Header from '../components/Header';
 
 const StoreDetail = () => {
-  // URL의 파라미터(예: /store/102)에서 id 값을 가져옵니다.
   const { id } = useParams();
   const navigate = useNavigate();
-
-  // id 값과 일치하는 가게 데이터를 mockStores에서 찾습니다.
-  // URL 파라미터는 문자열이므로 숫자로 변환(parseInt)해서 비교합니다.
   const store = stores.find((s) => s.id === parseInt(id));
 
-  //메뉴 모달의 열림/닫힘 상태를 관리
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // --- 가상의 추가 데이터 (나중에 API로 대체) ---
   const augmentedStore = {
     ...store,
-    menuImageUrl: 'https://example.com/images/menu_full.jpg', // 전체 메뉴판 이미지
+    menuImageUrl: 'https://example.com/images/menu_full.jpg',
     keywords: [
       '카공하기 좋은 곳',
       '전좌석 콘센트',
@@ -44,145 +39,130 @@ const StoreDetail = () => {
       text: '여기 정말 좋아요! 노트북 들고 와서 작업하기 너무 편하고, 특히 치즈케이크가 정말 맛있습니다. 재방문 의사 100%!',
     },
   };
-  // -----------------------------------------
 
-  // 만약 해당하는 가게 정보가 없으면 메시지를 표시합니다.
   if (!store) {
     return <div className="p-6">해당하는 가게 정보를 찾을 수 없습니다.</div>;
   }
 
+  // 👇 모든 요소를 하나의 부모 div로 감쌌습니다.
   return (
-    <div className="p-6">
-      {/* 뒤로가기 버튼 */}
-      <div className="flex justify-between items-center mb-4">
-        {/* 왼쪽: 뒤로가기 버튼 */}
-        <img
-          src="/Back.svg"
-          alt="Back"
-          className="w-[36px] h-[36px] cursor-pointer"
-          onClick={() => navigate(-1)} // 뒤로가기
-        />
+    <div className="min-h-screen bg-white font-sans">
+      {/* Header가 고정 위치라면, 컨텐츠가 가려지지 않도록 패딩을 추가해야 합니다. */}
+      {/* 예: <div className="pt-16"> ... </div> */}
+      <Header title={store.name} showBack={true} />
 
-        {/* 가운데: 제목 */}
-        <h1 className="text-2xl font-bold">more;ing</h1>
-
-        {/* 오른쪽: 제목을 중앙으로 밀어주기 위한 보이지 않는 공간 */}
-        <div className="w-[36px] h-[36px]"></div>
-      </div>
-
-      {/*오전 7시 방문 얼리버드 10% 할인*/}
-      <div className="flex justify-between items-center mb-2">
-        <div className="bg-[#FCE6A4] rounded-lg shadow-md text-black text-center p-2 w-fit">
-          오전 7시 방문 얼리버드 10% 할인
-        </div>
-      </div>
-
-      {/* 1. 헤더: 매장 이름과 별점 */}
-      <div className="flex justify-between items-center mb-2">
-        <h1 className="text-4xl font-extrabold">{augmentedStore.name}</h1>
-        <div className="flex items-center gap-1 text-xl font-bold">
-          <FaStar className="text-yellow-400" />
-          <span>{augmentedStore.reviewSummary.averageRating}</span>
-          <span className="text-sm font-normal text-gray-500">
-            ({augmentedStore.reviewSummary.totalReviews})
-          </span>
-        </div>
-      </div>
-
-      {/* 2. 정보: 위치와 영업시간 */}
-      <div className="flex flex-wrap justify-between items-center text-gray-600 border-b pb-4 mb-4">
-        <div className="flex items-center gap-2">
-          <FaMapMarkerAlt />
-          <span>{augmentedStore.address}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <FaClock />
-          <span>
-            {augmentedStore.openTime} ~ {augmentedStore.closeTime}
-          </span>
-        </div>
-      </div>
-
-      {/* 3. 카카오 지도 */}
-      <div className="mb-6 h-64 md:h-80 rounded-lg overflow-hidden shadow-md">
-        <KakaoMap
-          lat={augmentedStore.location.latitude}
-          lng={augmentedStore.location.longitude}
-        />
-      </div>
-
-      {/* 4. 메뉴 */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4">메뉴</h2>
-        <div className="bg-white p-4 rounded-lg shadow-md">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="font-semibold">{augmentedStore.menu[0].name}</p>
-              <p className="text-gray-600">
-                {augmentedStore.menu[0].price.toLocaleString()}원
-              </p>
-            </div>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200"
-            >
-              <FaRegImage />
-              메뉴판 이미지로 보기
-            </button>
+      <div className="p-4 md:p-6">
+        {/* 1. 헤더: 매장 이름(브랜드 폰트 적용)과 별점 */}
+        <div className="flex justify-between items-center mb-2">
+          <h1 className="text-4xl font-bold text-black">
+            {augmentedStore.name}
+          </h1>
+          <div className="flex items-center gap-1 text-xl font-bold">
+            <FaStar className="text-primary" />
+            <span>{augmentedStore.reviewSummary.averageRating}</span>
+            <span className="text-sm font-normal text-gray-500">
+              ({augmentedStore.reviewSummary.totalReviews})
+            </span>
           </div>
         </div>
-      </div>
 
-      {/* 5. 포토리뷰 (사이드 스크롤) */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4">포토 리뷰</h2>
-        <div className="flex overflow-x-auto gap-4 pb-4">
-          {augmentedStore.galleryImages.map((src, index) => (
-            <div key={index} className="flex-shrink-0 w-40 h-40">
-              <img
-                src={src}
-                alt={`포토리뷰 ${index + 1}`}
-                className="w-full h-full object-cover rounded-lg shadow-md"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 6. 방문자 리뷰 키워드 */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4">방문자 리뷰</h2>
-        <div className="flex flex-wrap gap-2">
-          {augmentedStore.keywords.map((keyword) => (
-            <span
-              key={keyword}
-              className="bg-white text-black text-sm font-medium px-3 py-1 rounded-full shadow-md"
-            >
-              # {keyword}
+        {/* 2. 정보: 위치와 영업시간 */}
+        <div className="flex flex-wrap justify-between items-center text-gray-600 border-b pb-4 mb-4">
+          <div className="flex items-center gap-2">
+            <FaMapMarkerAlt className="text-primary" />
+            <span>{augmentedStore.address}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <FaClock className="text-primary" />
+            <span>
+              {augmentedStore.openTime} ~ {augmentedStore.closeTime}
             </span>
-          ))}
+          </div>
         </div>
-      </div>
 
-      {/* 7. AI 리뷰 요약 */}
-      <div className="bg-white p-4 rounded-lg shadow-md mb-6 border-l-4 border-[#FCE6A4]">
-        <h3 className="text-lg font-bold mb-2">🤖 AI 리뷰 요약</h3>
-        <p className="text-gray-700">{augmentedStore.aiSummary}</p>
-      </div>
+        {/* ... (이하 나머지 코드는 동일) ... */}
+        {/* 3. 카카오 지도 */}
+        <div className="mb-6 h-64 md:h-80 rounded-lg overflow-hidden shadow-md">
+          <KakaoMap
+            lat={augmentedStore.location.latitude}
+            lng={augmentedStore.location.longitude}
+            name={store.name}
+          />
+        </div>
 
-      {/* 8. 대표 리뷰 */}
-      <div>
-        <div className="bg-white p-4 rounded-lg shadow-md">
-          <div className="flex justify-between items-center mb-2">
-            <span className="font-semibold">
-              {augmentedStore.featuredReview.author}
-            </span>
-            <div className="flex items-center gap-1">
-              <FaStar className="text-yellow-400" />
-              <span>{augmentedStore.featuredReview.rating}</span>
+        {/* 4. 메뉴 */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-4 text-black">메뉴</h2>
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="font-semibold">{augmentedStore.menu[0].name}</p>
+                <p className="text-gray-600">
+                  {augmentedStore.menu[0].price.toLocaleString()}원
+                </p>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition-colors"
+              >
+                <FaRegImage />
+                메뉴판 이미지로 보기
+              </button>
             </div>
           </div>
-          <p className="text-gray-800">{augmentedStore.featuredReview.text}</p>
+        </div>
+
+        {/* 5. 포토리뷰 (사이드 스크롤) */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-4 text-black">포토리뷰</h2>
+          <div className="flex overflow-x-auto gap-4 pb-4">
+            {augmentedStore.galleryImages.map((src, index) => (
+              <div key={index} className="flex-shrink-0 w-40 h-40">
+                <img
+                  src={src}
+                  alt={`포토리뷰 ${index + 1}`}
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 6. 방문자 리뷰 키워드 */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-4 text-black">방문자 TMI</h2>
+          <div className="flex flex-wrap gap-2">
+            {augmentedStore.keywords.map((keyword) => (
+              <span
+                key={keyword}
+                className="bg-orange-100 text-black text-sm font-semibold px-3 py-1 rounded-full"
+              >
+                # {keyword}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* 7. AI 리뷰 요약 */}
+        <div className="bg-white p-4 rounded-lg shadow-md mb-6 border-l-4 border-primary">
+          <h3 className="text-lg font-bold mb-2 text-secondary">
+            AI 리뷰 요약
+          </h3>
+          <p className="text-gray-700">{augmentedStore.aiSummary}</p>
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <div className="flex justify-between items-center mb-2">
+              <span className="font-semibold">
+                {augmentedStore.featuredReview.author}
+              </span>
+              <div className="flex items-center gap-1">
+                <FaStar className="text-primary" />
+                <span>{augmentedStore.featuredReview.rating}</span>
+              </div>
+            </div>
+            <p className="text-gray-800">
+              {augmentedStore.featuredReview.text}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -192,7 +172,7 @@ const StoreDetail = () => {
           <div className="relative bg-white p-4 rounded-lg max-w-lg w-full">
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-2 right-2 text-2xl text-white bg-black rounded-full p-1"
+              className="absolute -top-4 -right-4 text-2xl text-white bg-black rounded-full p-1 leading-none"
             >
               <FaTimes />
             </button>

@@ -28,7 +28,6 @@ function App() {
         {/* Layout이 적용되는 경로들 */}
         <Route element={<Layout />}>
           <Route path="/stores_mock" element={<Stores_mock />} />
-          {/* <Route path="/store_detail_mock" element={<StoreDetail_mock />} /> */}
           <Route path="/" element={<Login />} />
           <Route path="/main" element={<Main />} />
           <Route path="/mypage" element={<MyPage />} />
