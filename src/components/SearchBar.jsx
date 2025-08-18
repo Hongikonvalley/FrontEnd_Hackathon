@@ -22,7 +22,7 @@ const SearchBar = ({ selectedTime, selectedCategory }) => {
   };
 
   return (
-    <div className="w-full h-[40px] bg-white px-[10px] py-[10px] justify-between items-center rounded-[20px] flex mt-[16px]">
+    <div className="w-full h-[40px] text-[14px] bg-white px-[16px] py-[10px] justify-between items-center rounded-[20px] flex mt-[16px]">
       <input
         type="text"
         value={query}
