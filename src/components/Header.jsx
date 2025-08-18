@@ -17,20 +17,27 @@ const Header = ({ title, showBack }) => {
         />
       )}
       <div className="flex">
-        {' '}
         {title === 'fav' ? <div className="font-semibold ">my</div> : <></>}
-        <Link to="/main" className="font-head px-[10px]">
-          more;ing
-        </Link>
+        {title === 'setting' ? (
+          <div className="px-[10px]"> 설정 </div>
+        ) : (
+          <Link to="/main" className="font-head px-[10px]">
+            more;ing
+          </Link>
+        )}
       </div>
 
-      <img
-        src="/Menu.png"
-        alt="hmb"
-        onClick={() => {
-          navigate('/mypage');
-        }}
-      />
+      {title === 'setting' ? (
+        <div className="w-1/12" />
+      ) : (
+        <img
+          src="/Menu.png"
+          alt="hmb"
+          onClick={() => {
+            navigate('/settings');
+          }}
+        />
+      )}
     </header>
   );
 };
