@@ -12,6 +12,8 @@ import Coupon from './pages/Coupon.jsx';
 import Stores from './pages/Stores.jsx';
 import Favorite from './pages/Favorite.jsx';
 import StoreDetail from './pages/StoreDetail.jsx';
+import Setting from './pages/Setting.jsx';
+//import StoreDetail_mock from './pages/StoreDetail_mock.jsx';
 import Stores_mock from './pages/Stores_mock.jsx';
 import './index.css';
 import Navbar from './components/Navbar';
@@ -34,6 +36,7 @@ function App() {
           <Route path="/coupon" element={<Coupon />} />
           <Route path="/stores" element={<Stores />} />
           <Route path="/store/:id" element={<StoreDetail />} />
+          <Route path="/settings" element={<Setting />} />
         </Route>
       </Routes>
     </BrowserRouter>
