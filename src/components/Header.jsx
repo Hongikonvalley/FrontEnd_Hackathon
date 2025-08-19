@@ -17,7 +17,11 @@ const Header = ({ title, showBack }) => {
         />
       )}
       <div className="flex">
-        {title === 'fav' ? <div className="font-semibold ">my</div> : <></>}
+        {title === 'fav' || title === 'mypage' ? (
+          <div className="font-semibold ">my</div>
+        ) : (
+          <></>
+        )}
         {title === 'setting' ? (
           <div className="px-[10px]"> 설정 </div>
         ) : (
@@ -29,6 +33,14 @@ const Header = ({ title, showBack }) => {
 
       {title === 'setting' ? (
         <div className="w-1/12" />
+      ) : title === 'mypage' ? (
+        <img
+          src="/Settings.png"
+          alt="Settings"
+          onClick={() => {
+            navigate('/settings');
+          }}
+        />
       ) : (
         <img
           src="/Menu.png"
