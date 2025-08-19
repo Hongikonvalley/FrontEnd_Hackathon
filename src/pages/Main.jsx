@@ -124,13 +124,12 @@ const Main = () => {
                 더보기
               </div>
 
-//               <button
+              {/* //               <button
 //                 className="bg-primary w-fit p-2 h-[30px] rounded-[30px] flex justify-center items-center hover:cursor-pointer text-[14px] mt-[6px]"
 //                 onClick={goToCoupon}
-//               >
+//               />
 //                 더보기
-//               </button>
-
+//                */}
             </div>
           </div>
         </div>
