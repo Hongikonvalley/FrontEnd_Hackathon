@@ -33,11 +33,8 @@ const MyPage = () => {
               className="w-16 h-16 rounded-full object-cover border-2 border-primary"
             />
             <div>
-              <p className="text-2xl font-bold">얼리버드 님</p>
+              <p className="text-2xl font-bold">잉뉴</p>
             </div>
-          </div>
-          <div className="bg-orange-100 text-secondary font-bold py-2 px-4 rounded-full text-sm">
-            more Lv : 00
           </div>
         </div>
 
@@ -48,7 +45,7 @@ const MyPage = () => {
             <h1>Point</h1>
           </div>
           <div className="flex justify-between items-end mt-2">
-            <p className="text-xl font-head text-black">1,250 포인트</p>
+            <p className="text-xl font-head text-white">1,250 포인트</p>
             <button className="bg-secondary text-white items-center px-3 py-1 rounded-lg hover:bg-secondary transition-colors font-bold">
               환전하기
             </button>
@@ -61,9 +58,6 @@ const MyPage = () => {
           <MenuItem to="/profile-settings" iconSrc="/Human Head.png">
             프로필 설정
           </MenuItem>
-          <MenuItem to="/history" iconSrc="/Shop.png">
-            나의 방문 히스토리
-          </MenuItem>
           <MenuItem to="/my-reviews" iconSrc="/Popular.png">
             나의 리뷰 모아보기
           </MenuItem>
@@ -74,7 +68,10 @@ const MyPage = () => {
             공지사항
           </MenuItem>
           <MenuItem to="/support" iconSrc="/Online Support.png">
-            고객센터
+            지원팀과 채팅하기
+          </MenuItem>
+          <MenuItem to="/instagram" iconSrc="/Instagram.png">
+            인스타그램
           </MenuItem>
         </div>
       </div>
