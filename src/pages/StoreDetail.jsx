@@ -1,28 +1,27 @@
 // src/pages/StoreDetail.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { stores } from '../data/mockStores';
+import { useQuery } from '@tanstack/react-query'; // useQuery import
+import { getStoreById } from '../apis/stores'; // API 함수 import
 import KakaoMap from '../components/KakaoMap';
 import {
   FaStar,
   FaMapMarkerAlt,
   FaClock,
-  FaRegImage,
-  FaTimes,
-  FaMapMarkedAlt,
+  FaHeart,
+  FaRegHeart,
+  FaShareAlt,
 } from 'react-icons/fa';
 import Header from '../components/Header';
-import { useAuthStore } from '../stores/useAuthStore'; //로그인 여부를 확인한 후 리뷰 작성 가능
+import { useAuthStore } from '../stores/useAuthStore';
 
 const StoreDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const store = stores.find((s) => s.id === parseInt(id));
   const { isLoggedIn } = useAuthStore(); // 로그인 여부 확인
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isFavorited, setIsFavorited] = useState(false);
   const [showCopyAlert, setShowCopyAlert] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [reviews, setReviews] = useState([
@@ -55,6 +54,24 @@ const StoreDetail = () => {
   const [newReviewText, setNewReviewText] = useState('');
   const [newReviewRating, setNewReviewRating] = useState(5);
   const [visibleReviewCount, setVisibleReviewCount] = useState(3);
+
+  // 1. API를 통해 가게 데이터를 불러옵니다.
+  const {
+    data: store,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['store', id], // 쿼리를 식별하는 고유 키
+    queryFn: () => getStoreById(id), // 데이터를 가져오는 API 함수
+    enabled: !!id, // id가 있을 때만 쿼리 실행
+  });
+  // 2. 즐겨찾기 상태를 API 응답값으로 초기화합니다.
+  const [isFavorited, setIsFavorited] = useState(false);
+  useEffect(() => {
+    if (store) {
+      setIsFavorited(store.user_context.is_favorite);
+    }
+  }, [store]);
 
   const handleShare = async () => {
     try {
@@ -116,6 +133,13 @@ const StoreDetail = () => {
     },
   };
 
+  // 3. 로딩 및 에러 상태를 처리합니다.
+  if (isLoading)
+    return <div className="p-6 text-center">가게 정보를 불러오는 중...</div>;
+  if (error)
+    return (
+      <div className="p-6 text-center text-red-500">오류가 발생했습니다.</div>
+    );
   if (!store) {
     return <div className="p-6">해당하는 가게 정보를 찾을 수 없습니다.</div>;
   }
@@ -125,45 +149,34 @@ const StoreDetail = () => {
   return (
     <div className="min-h-screen bg-white font-sans">
       <Header title={store.name} showBack={true} />
-
-      {/* 👇 헤더 아래의 모든 컨텐츠를 담는 하나의 부모 div */}
-      <div className="p-4 md:p-6 ">
-        {/* 아침 혜택 및 즐겨찾기/공유 섹션 */}
+      <div className="p-4 md:p-6 pt-20">
+        {/* 아침 혜택 정보 */}
         <div className="flex justify-between items-center mb-4">
           <div className="bg-orange-100 text-secondary font-bold py-2 px-4 rounded-full text-sm">
-            오전 7시 방문 얼리버드 10% 할인
+            {store.discount_info.message}
           </div>
           <div className="flex items-center gap-4 text-2xl">
-            <button
-              onClick={() => setIsFavorited(!isFavorited)}
-              aria-label="Toggle Favorite"
-            >
-              <img
-                src="/Heart.png" // public 폴더의 Heart.png 사용
-                alt="Favorite"
-                className={`w-6 h-6 transition-opacity ${isFavorited ? 'opacity-100' : 'opacity-40'}`}
-              />
+            <button onClick={() => setIsFavorited(!isFavorited)}>
+              {isFavorited ? (
+                <FaHeart className="text-red-500" />
+              ) : (
+                <FaRegHeart className="text-gray-400" />
+              )}
             </button>
-            <button onClick={handleShare} aria-label="Share">
-              <img
-                src="/Share.png" // public 폴더의 Share.png 사용
-                alt="Share"
-                className="w-6 h-6"
-              />
+            <button onClick={handleShare}>
+              <FaShareAlt className="text-gray-400" />
             </button>
           </div>
         </div>
 
         {/* 매장 이름과 별점 */}
         <div className="flex justify-between items-center mb-2">
-          <h1 className="text-4xl font-bold text-black">
-            {augmentedStore.name}
-          </h1>
+          <h1 className="text-4xl font-bold text-black">{store.name}</h1>
           <div className="flex items-center gap-1 text-xl font-bold">
             <FaStar className="text-primary" />
-            <span>{augmentedStore.reviewSummary.averageRating}</span>
+            <span>{store.average_rating}</span>
             <span className="text-sm font-normal text-gray-500">
-              ({augmentedStore.reviewSummary.totalReviews})
+              ({store.total_reviews})
             </span>
           </div>
         </div>
@@ -172,61 +185,35 @@ const StoreDetail = () => {
         <div className="flex flex-wrap justify-between items-center text-gray-600 border-b pb-4 mb-4">
           <div className="flex items-center gap-2">
             <FaMapMarkerAlt className="text-primary" />
-            <span>{augmentedStore.address}</span>
+            <span>{store.address}</span>
           </div>
           <div className="flex items-center gap-2">
             <FaClock className="text-primary" />
-            <span>
-              {augmentedStore.openTime} ~ {augmentedStore.closeTime}
-            </span>
+            <span>{store.business_info.status_message}</span>
           </div>
         </div>
 
         {/* 카카오 지도 */}
         <div className="mb-6 h-64 md:h-80 rounded-lg overflow-hidden shadow-md">
           <KakaoMap
-            lat={augmentedStore.location.latitude}
-            lng={augmentedStore.location.longitude}
+            lat={store.location.latitude}
+            lng={store.location.longitude}
             name={store.name}
           />
-        </div>
-        {/* 👇 '지도 앱에서 보기' 버튼 추가 */}
-        <div className="flex items-center gap-1 mb-6">
-          <a
-            href={naverMapUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-black font-bold px-4 py-2 rounded-lg shadow-md"
-          >
-            <img
-              src="/icons8-지리적-울타리-50.png"
-              alt="네이버 지도 아이콘"
-              className="w-5 h-5"
-            />
-            네이버 지도에서 보기
-          </a>
         </div>
 
         {/* 메뉴 */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-4 text-black">메뉴</h2>
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="font-semibold">{augmentedStore.menu[0].name}</p>
-                <p className="text-gray-600">
-                  {augmentedStore.menu[0].price.toLocaleString()}원
-                </p>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition-colors"
-              >
-                <FaRegImage />
-                메뉴판 이미지로 보기
-              </button>
+          {store.menus.map((menu) => (
+            <div
+              key={menu.name}
+              className="bg-white p-4 rounded-lg shadow-md mb-2 flex justify-between"
+            >
+              <p className="font-semibold">{menu.name}</p>
+              <p className="text-gray-600">{menu.price.toLocaleString()}원</p>
             </div>
-          </div>
+          ))}
         </div>
 
         {/* 포토리뷰 (사이드 스크롤) */}
