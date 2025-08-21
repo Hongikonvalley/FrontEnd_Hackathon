@@ -10,6 +10,7 @@ import {
   FaClock,
   FaRegImage,
   FaTimes,
+  FaMapMarkedAlt,
 } from 'react-icons/fa';
 import Header from '../components/Header';
 import { useAuthStore } from '../stores/useAuthStore'; //로그인 여부를 확인한 후 리뷰 작성 가능
@@ -119,6 +120,8 @@ const StoreDetail = () => {
     return <div className="p-6">해당하는 가게 정보를 찾을 수 없습니다.</div>;
   }
 
+  const naverMapUrl = `https://map.naver.com/v5/search/${encodeURIComponent(augmentedStore.name)}`;
+
   return (
     <div className="min-h-screen bg-white font-sans">
       <Header title={store.name} showBack={true} />
@@ -186,6 +189,22 @@ const StoreDetail = () => {
             lng={augmentedStore.location.longitude}
             name={store.name}
           />
+        </div>
+        {/* 👇 '지도 앱에서 보기' 버튼 추가 */}
+        <div className="flex items-center gap-1 mb-6">
+          <a
+            href={naverMapUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-black font-bold px-4 py-2 rounded-lg shadow-md"
+          >
+            <img
+              src="/icons8-지리적-울타리-50.png"
+              alt="네이버 지도 아이콘"
+              className="w-5 h-5"
+            />
+            지도 앱에서 보기
+          </a>
         </div>
 
         {/* 메뉴 */}
