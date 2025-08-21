@@ -203,7 +203,7 @@ const StoreDetail = () => {
               alt="네이버 지도 아이콘"
               className="w-5 h-5"
             />
-            지도 앱에서 보기
+            네이버 지도에서 보기
           </a>
         </div>
 
