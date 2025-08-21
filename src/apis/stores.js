@@ -63,7 +63,7 @@ export const getStoresFiltered = async ({
 
 export const getStoreById = async (id) => {
   try {
-    const { data } = await instance.get(`api/v1/stores/${id}`); // '/api/v1' 제거
+    const { data } = await instance.get(`api/v1/stores/${id}`);
     return data?.result ?? null;
   } catch (e) {
     console.error('[getStoreById] FAIL:', e);

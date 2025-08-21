@@ -1,21 +1,24 @@
-// src/pages/Login.jsx
+// src/pages/Register.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import CommonInput from '../components/CommonInput.jsx';
 import CommonButton from '../components/CommonButton.jsx';
 
-const Login = () => {
+const Register = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    id: '',
+    name: '',
+    phone: '',
+    email: '',
+    birthday: '',
     password: '',
   });
 
-  // ID와 비밀번호가 모두 채워졌는지 확인하는 변수
-  const isFormComplete =
-    formData.id.trim() !== '' && formData.password.trim() !== '';
+  const isFormComplete = Object.values(formData).every(
+    (value) => value.trim() !== ''
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,19 +30,13 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: 실제 백엔드 로그인 API 연동 로직 추가
-    console.log('로그인 시도:', formData);
+    localStorage.setItem('userEmail', formData.email);
     alert('로그인 성공!');
     navigate('/main');
   };
 
-  const handleGoToRegister = () => {
-    navigate('/register');
-  };
-
   return (
     <>
-      {/* Register.jsx와 동일한 배경 및 카드 스타일 적용 */}
       <div className="relative min-h-screen bg-gradient-to-br flex items-center justify-center px-4 md:hidden">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 md:p-10 border border-indigo-100">
           <div className="flex items-center justify-center mb-6 gap-2">
@@ -49,13 +46,38 @@ const Login = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* ID와 Password 입력 필드만 남김 */}
             <CommonInput
               label="ID"
               name="id"
               value={formData.id}
               onChange={handleChange}
               placeholder="아이디를 입력하세요"
+            />
+            <CommonInput
+              label="Full Name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+            />
+            <CommonInput
+              label="Phone Number"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="010-xxxx-xxxx"
+            />
+            <CommonInput
+              label="Email Address"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+            />
+            <CommonInput
+              label="Birthday"
+              name="birthday"
+              value={formData.birthday}
+              onChange={handleChange}
+              type="date"
             />
             <CommonInput
               label="Password"
@@ -70,24 +92,13 @@ const Login = () => {
               disabled={!isFormComplete}
               variant="signin"
             >
-              Sign In
+              회원가입 완료
             </CommonButton>
           </form>
-
-          {/* 회원가입 페이지로 이동하는 링크 */}
-          <p className="text-sm md:text-base text-center mt-6 text-gray-600">
-            Don’t have an account?{' '}
-            <span
-              onClick={handleGoToRegister}
-              className="text-secondary hover:underline cursor-pointer font-medium"
-            >
-              Register
-            </span>
-          </p>
         </div>
       </div>
     </>
   );
 };
 
-export default Login;
+export default Register;

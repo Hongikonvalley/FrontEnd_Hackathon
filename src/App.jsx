@@ -12,9 +12,11 @@ import Coupon from './pages/Coupon.jsx';
 import Stores from './pages/Stores.jsx';
 import Favorite from './pages/Favorite.jsx';
 import StoreDetail from './pages/StoreDetail.jsx';
+import Setting from './pages/Setting.jsx';
+//import StoreDetail_mock from './pages/StoreDetail_mock.jsx';
 import Stores_mock from './pages/Stores_mock.jsx';
 import './index.css';
-import Navbar from './components/Navbar';
+import Register from './pages/Register.jsx';
 
 function App() {
   return (
@@ -22,11 +24,11 @@ function App() {
       <Routes>
         {/* Layout이 적용되지 않는 단독 경로 */}
         <Route path="/auth/callback" element={<KakaoRedirect />} />
-
+        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<Login />} />
         {/* Layout이 적용되는 경로들 */}
         <Route element={<Layout />}>
           <Route path="/stores_mock" element={<Stores_mock />} />
-          <Route path="/" element={<Login />} />
           <Route path="/main" element={<Main />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/store" element={<Stores />} />
@@ -34,6 +36,7 @@ function App() {
           <Route path="/coupon" element={<Coupon />} />
           <Route path="/stores" element={<Stores />} />
           <Route path="/store/:id" element={<StoreDetail />} />
+          <Route path="/settings" element={<Setting />} />
         </Route>
       </Routes>
     </BrowserRouter>

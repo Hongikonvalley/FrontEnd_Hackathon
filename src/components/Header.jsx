@@ -7,34 +7,49 @@ import { useNavigate } from 'react-router-dom';
 const Header = ({ title, showBack }) => {
   const navigate = useNavigate();
   return (
-    <header className="flex flex-row itmes-center justify-between px-[20px] bg-white text-[25px] m-[16px]">
+    <header className="flex flex-row itmes-center justify-between  bg-white text-[25px] m-[16px]">
       {showBack && (
         <img
           src="/Back.svg"
           alt="Back"
-          className="w-[36px] h-[36px] cursor-pointer"
+          className="w-[34px] h-[34px] cursor-pointer"
           onClick={() => navigate(-1)} // 뒤로가기
         />
       )}
       <div className="flex">
-        {' '}
-        {title === 'fav' ? (
-          <div className="font-semibold px-[10px]">my</div>
+        {title === 'fav' || title === 'mypage' ? (
+          <div className="font-semibold ">my</div>
         ) : (
           <></>
         )}
-        <Link to="/main" className="font-head">
-          more;ing
-        </Link>
+        {title === 'setting' ? (
+          <div className="px-[10px]"> 설정 </div>
+        ) : (
+          <Link to="/main" className="font-head px-[10px]">
+            more;ing
+          </Link>
+        )}
       </div>
 
-      <img
-        src="/Menu.png"
-        alt="hmb"
-        onClick={() => {
-          navigate('/mypage');
-        }}
-      />
+      {title === 'setting' ? (
+        <div className="w-1/12" />
+      ) : title === 'mypage' ? (
+        <img
+          src="/Settings.png"
+          alt="Settings"
+          onClick={() => {
+            navigate('/settings');
+          }}
+        />
+      ) : (
+        <img
+          src="/Menu.png"
+          alt="hmb"
+          onClick={() => {
+            navigate('/settings');
+          }}
+        />
+      )}
     </header>
   );
 };

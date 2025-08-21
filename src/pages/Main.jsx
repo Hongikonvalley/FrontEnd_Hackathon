@@ -8,18 +8,28 @@ const Main = () => {
   const navigate = useNavigate();
 
   const [selectedTime, setSelectedTime] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(false);
+  const [selectedFavorite, setSelectedFavorite] = useState(null);
+  const [selectedType, setSelectedType] = useState(null);
 
   // 나중엔 메타 API(/search/filter)로 대체 가능
   const timeSlots = ['06:00-07:00', '07:00-08:00', '08:00-09:00'];
-  const categories = ['카페', '브런치', '베이커리'];
+  const typeSlots = [
+    'Coffee',
+    'Bakery',
+    'Hamburger',
+    'Soup_Plate',
+    'View_More',
+  ];
 
-  const handleTimeSelect = (timeRange) => {
-    setSelectedTime((prev) => (prev === timeRange ? null : timeRange));
-  };
-
-  const handleCategorySelect = (category) => {
-    setSelectedCategory((prev) => (prev === category ? null : category));
+  const handleToggle = (type, value) => {
+    const table = {
+      time: setSelectedTime,
+      category: setSelectedCategory,
+      favorite: setSelectedFavorite,
+      type: setSelectedType,
+    };
+    table[type]?.((prev) => (prev === value ? null : value));
   };
 
   const goToStores = () => {
@@ -44,7 +54,7 @@ const Main = () => {
       <div className="min-h-dvh pb-[calc(80px+env(safe-area-inset-bottom))] pt-2 space-y-4">
         {' '}
         {/* search bar div */}
-        <div className="bg-primary rounded-[20px] mx-[30px] my-[16px] p-[28px] flex flex-col">
+        <div className="bg-primary rounded-[20px] mx-[30px] my-[16px] p-[22px] flex flex-col">
           <div className="font-bold text-[20px]">
             <p>윤서님,</p>
             <p>좋은 아침이에요</p>
@@ -57,101 +67,95 @@ const Main = () => {
           />
 
           {/* 토글 항목 */}
-          <div className="flex flex-row justify-between mt-[16px]">
+          <div className="flex flex-col gap-[16px] justify-center mt-[16px]">
             {/* Time Group */}
-            <div className="flex flex-row items-center gap-[6px]">
-              <p className="text-[12px]">Time</p>
-              {timeSlots.map((time) => (
-                <FilterButton
-                  key={time}
-                  label={time}
-                  selected={selectedTime === time}
-                  onClick={() => handleTimeSelect(time)}
-                />
-              ))}
+            <div className="flex flex-row justify-center items-center gap-[6px]">
+              <div className="flex flex-row items-center gap-[6px]">
+                <p className="text-[12px]">시간대</p>
+                {/* select */}
+                <select
+                  key="시간대"
+                  className="w-auto shadow-lg flex p-[2px] m-[8px] rounded-[20px] text-[12px] bg-white"
+                >
+                  {timeSlots.map((time) => (
+                    <option value={time}>{time}</option>
+                  ))}
+                </select>
+              </div>
+              <FilterButton
+                label="모닝세일"
+                selected={selectedCategory}
+                onClick={() => handleToggle('favorite', favorite)}
+              />
             </div>
-
-            {/* Category Group */}
-            <div className="flex flex-row items-center gap-[6px]">
-              <p className="text-[12px]">Place</p>
-              {categories.map((category) => (
-                <FilterButton
-                  key={category}
-                  label={category}
-                  selected={selectedCategory === category}
-                  onClick={() => handleCategorySelect(category)}
-                  disabled={category === '베이커리'} // 예시로 베이커리는 비활성화
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* menu */}
-          <div className="flex flex-row justify-between mt-[16px]">
-            {' '}
-            <button className="bg-white w-fit p-2 h-[20px] rounded-[20px] flex justify-center items-center hover:cursor-pointer text-[12px]">
-              menu 1
-            </button>
-            <button className="bg-white w-fit p-2 h-[20px] rounded-[20px] flex justify-center items-center hover:cursor-pointer text-[12px]">
-              other menu
-            </button>
-            <button className="bg-white w-fit p-2 h-[20px] rounded-[20px] flex justify-center items-center hover:cursor-pointer text-[12px]">
-              the other one !
-            </button>
           </div>
         </div>
-        {/* 쿠폰 박스 */}
-        <div className="border-primary border-2 rounded-[20px] mx-[30px] my-[16px] p-[18px] flex flex-col">
-          <p className="font-bold text-[20px]">윤서님 주변의 쿠폰</p>
+        <div className="mx-[30px] mt-[30px]">
+          {' '}
+          <div className="font-semibold ">메뉴가 고민이라면?</div>
+          <div className="grid grid-cols-5 gap-[10px] m-[5px]">
+            {typeSlots.map((type) => (
+              <FilterButton
+                iconOnly={true}
+                isrc={`./${type}.svg`}
+                key="type"
+                onClick={handleToggle()}
+              />
+            ))}
+          </div>
+        </div>
+        {/* HOT 모닝세일 */}
+        <div className="border-b-1 border-[#DBDBDB] mx-[20px] mt-[8px] mb-0 p-[16px] flex flex-col">
+          <p className="font-extrabold text-[20px]">오늘의 HOT 모닝세일</p>
           <div className="flex flex-row justify-between items-center">
-            <div className="flex flex-row gap-[16px] ">
+            <div className="flex flex-row gap-[12px] ">
               <img
                 src="/hdcafe.png"
                 alt="coupon"
-                className="w-[120px] h-[120px] rounded-[15px] object-cover mt-[16px]"
+                className="w-2/5 h-auto aspect-square rounded-[15px] object-cover mt-[16px]"
               />
               <img
                 src="/angel.png"
                 alt="coupon"
-                className="w-[120px] h-[120px] rounded-[15px] object-cover mt-[16px]"
+                className="w-2/5 h-auto aspect-square rounded-[15px] object-cover mt-[16px]"
               />
-              <button
-                className="bg-primary w-fit p-2 h-[30px] rounded-[30px] flex justify-center items-center hover:cursor-pointer text-[14px] mt-[6px]"
-                onClick={goToCoupon}
+
+              <div
+                className="flex items-center text-[12px] font-bold"
+                onClick={goToMockStores}
               >
                 더보기
-              </button>
+              </div>
             </div>
           </div>
         </div>
-        {/* HOT 얼리버드 */}
-        <div className="border-primary border-2 rounded-[20px] mx-[30px] my-[16px] p-[18px] flex flex-col">
-          <p className="font-bold text-[20px]">오늘의 HOT🔥 얼리버드</p>
+        {/* 인기매장 */}
+        <div className="mx-[20px] p-[16px] flex flex-col">
+          <p className="font-extrabold text-[20px]">오늘의 인기 매장</p>
           <div className="flex flex-row items-center">
             <img
               src="/gabiae.png"
               alt="hot"
-              className="w-[120px] h-[120px] rounded-[15px] object-cover mt-[16px]"
+              className="w-2/5 h-auto aspect-square rounded-[15px] object-cover my-[16px]"
             />
             <div className="pl-[16px] flex-grow">
               <div className="flex flex-row items-center mt-[16px]">
                 <p className="text-[20px] font-black">가비애</p>
                 <p className="text-[20px] ml-2">⭐4.9</p>
               </div>
-              <p className="text-[14px] font-medium">
-                # 모든 자리에 콘센트 있음
+              <p className="text-[14px] font-medium">24시간 오픈</p>
+              <p className="text-[14px] font-medium text-secondary">
+                오전시간 사이즈업
               </p>
-              <p className="text-[14px] font-medium"># 24시간 오픈</p>
-              <p className="text-[12px]">홍대입구역에서 5분</p>
+              <button
+                className="bg-primary text-white w-full p-2 h-[30px] rounded-[30px] flex justify-center items-center hover:cursor-pointer text-[14px] font-bold mt-[6px]"
+                //onClick={goToStores}
+                onClick={goToMockStores}
+              >
+                자세히 보기
+              </button>
             </div>
           </div>
-          <button
-            className="bg-primary w-full p-2 h-[30px] rounded-[30px] flex justify-center items-center hover:cursor-pointer text-[14px] font-bold mt-[6px]"
-            //onClick={goToStores}
-            onClick={goToMockStores}
-          >
-            얼리버드 되기
-          </button>
         </div>
       </div>
     </>
