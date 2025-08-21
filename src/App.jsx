@@ -16,7 +16,6 @@ import Setting from './pages/Setting.jsx';
 //import StoreDetail_mock from './pages/StoreDetail_mock.jsx';
 import Stores_mock from './pages/Stores_mock.jsx';
 import './index.css';
-import Navbar from './components/Navbar';
 import Register from './pages/Register.jsx';
 
 function App() {
