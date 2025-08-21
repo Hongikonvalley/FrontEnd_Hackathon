@@ -114,7 +114,7 @@ const StoreDetail = () => {
 
         {/* 5. 포토리뷰 (사이드 스크롤) */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-4 text-black">포토리뷰</h2>
+          <h2 className="text-2xl font-bold mb-4 text-black">사진 정보</h2>
           <div className="flex overflow-x-auto gap-4 pb-4">
             {augmentedStore.galleryImages.map((src, index) => (
               <div key={index} className="flex-shrink-0 w-40 h-40">

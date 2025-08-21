@@ -1,11 +1,11 @@
 import React from 'react';
 import CouponCard from '../components/CouponCard';
+import Header from '../components/Header';
 
 const Coupon = () => {
   return (
     <div>
-      <h1>쿠폰 페이지</h1>
-      <p>여기에 쿠폰 관련 내용이 표시됩니다.</p>
+      <Header title="쿠폰" showBack={true} />
       <CouponCard />
     </div>
   );
