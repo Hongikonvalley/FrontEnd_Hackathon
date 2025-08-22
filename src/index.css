@@ -12,3 +12,27 @@
   --font-sans: 'Pretendard', ui-sans-serif, system-ui, sans-serif;
   --font-head: 'Rammetto One', sans-serif;
 }
+
+/* 왼쪽 말풍선 꼬리 (이용자) */
+.bubble-left::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -8px;
+  border-top: 10px solid transparent;
+  border-right: 10px solid #e5e7eb; /* bg-gray-200 색상 */
+  border-bottom: 0px solid transparent;
+  border-left: 0px solid transparent;
+}
+
+/* 오른쪽 말풍선 꼬리 (지원팀) */
+.bubble-right::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: -8px;
+  border-top: 10px solid transparent;
+  border-left: 10px solid #ff9743; /* bg-primary 색상 */
+  border-bottom: 0px solid transparent;
+  border-right: 0px solid transparent;
+}
