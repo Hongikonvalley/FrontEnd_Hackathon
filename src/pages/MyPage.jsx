@@ -23,7 +23,7 @@ const MyPage = () => {
   return (
     <div>
       <Header title="mypage" showBack={true} />
-      <div className="p-4 md:p-6 bg-gray-50 font-sans">
+      <div className="p-4 md:p-6 bg-white font-sans">
         {/* 1. 프로필 영역 */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
