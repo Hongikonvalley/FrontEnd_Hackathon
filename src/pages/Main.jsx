@@ -62,6 +62,8 @@ const Main = () => {
           </div>
 
           <SearchBar
+            variant="main"
+            holder="지금 떠오르는 메뉴를 검색해보세요."
             selectedTime={selectedTime}
             selectedCategory={selectedCategory}
           />

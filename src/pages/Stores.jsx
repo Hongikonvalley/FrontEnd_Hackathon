@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   useNavigate,
   useOutletContext,
@@ -11,25 +11,40 @@ import {
   getStoresFiltered,
 } from '../apis/stores';
 import StoreCard from '../components/StoreCard';
+import Header from '../components/Header';
+import { stores } from '../data/mockStores';
+import SearchBar from '../components/SearchBar';
+import FilteredList from '../components/FilteredList';
+import { TbLabel } from 'react-icons/tb';
 
 const Stores = () => {
   const { setShowNavBar } = useOutletContext();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  // 너희가 쓰는 키에 맞춰서 (예: name 또는 q)
+  const raw = searchParams.get('name') ?? searchParams.get('q') ?? '';
 
-  // 확인
-  useEffect(() => {
-    (async () => {
-      try {
-        const list = await fetchAllStores();
-        console.log('[DEBUG] ALL STORES:', list);
-        console.log('[DEBUG] COUNT:', list.length);
-        if (list[0]) console.log('[DEBUG] FIRST:', list[0]);
-      } catch (e) {
-        console.error('[DEBUG] fetchAllStores FAIL', e);
-      }
-    })();
-  }, []);
+  // +를 공백으로 보이게 하고 싶으면
+  const value = raw.replace(/\+/g, ' ');
+
+  const [filters, setFilters] = useState(['7-8시', '모닝세일']);
+
+  const handleRemove = (target) => {
+    setFilters((prev) => prev.filter((f) => f !== target));
+  };
+  // // 확인
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const list = await fetchAllStores();
+  //       console.log('[DEBUG] ALL STORES:', list);
+  //       console.log('[DEBUG] COUNT:', list.length);
+  //       if (list[0]) console.log('[DEBUG] FIRST:', list[0]);
+  //     } catch (e) {
+  //       console.error('[DEBUG] fetchAllStores FAIL', e);
+  //     }
+  //   })();
+  // }, []);
 
   // 내비바 숨김 처리
   useEffect(() => {
@@ -48,7 +63,7 @@ const Stores = () => {
     [searchParams]
   );*/
   }
-  const filters = Object.fromEntries(searchParams.entries());
+  // const filters = Object.fromEntries(searchParams.entries());
 
   // // 메타 조회
   // const { data: meta } = useQuery({
@@ -58,15 +73,15 @@ const Stores = () => {
   // const categories = meta?.categories ?? [];
   // const times = meta?.times ?? [];
 
-  const {
-    data: stores = [],
-    isLoading,
-    error,
-  } = useQuery({
-    //queryKey: ['stores', filters.name, filters.time, filters.category],
-    queryKey: ['stores', filters],
+  // const {
+  //   data: stores = [],
+  //   isLoading,
+  //   error,
+  // } = useQuery({
+  //   //queryKey: ['stores', filters.name, filters.time, filters.category],
+  //   queryKey: ['stores', filters],
 
-    /*
+  /*
       queryFn: () => {
       const hasAnyFilter =
         !!filters.name || !!filters.time || !!filters.category;
@@ -74,36 +89,42 @@ const Stores = () => {
       return hasAnyFilter ? getStoresFiltered(filters) : fetchAllStores();
     },
     */
-    queryFn: () => getStoresFiltered(filters),
-    keepPreviousData: true,
-  });
+  //   queryFn: () => getStoresFiltered(filters),
+  //   keepPreviousData: true,
+  // });
 
-  if (isLoading) return <div className="p-4 text-center">검색 중...</div>;
-  if (error)
-    return (
-      <div className="p-4 text-center text-red-500">
-        오류가 발생했습니다: {error.message}
-      </div>
-    );
+  // if (isLoading) return <div className="p-4 text-center">검색 중...</div>;
+  // if (error)
+  //   return (
+  //     <div className="p-4 text-center text-red-500">
+  //       오류가 발생했습니다: {error.message}
+  //     </div>
+  //   );
 
   return (
-    <div className="p-6 bg-white min-h-screen">
-      <div className="flex flex-row items-center content-center justify-between mb-6">
-        <img
-          src="/Back.svg"
-          alt="Back"
-          className="w-[36px] h-[36px] cursor-pointer"
-          onClick={() => navigate(-1)} // 뒤로가기
+    <>
+      <Header showBack={true} />
+
+      {/* filtering */}
+      <div className="flex flex-col mb-[4px] p-[6px] mx-[24px]">
+        <SearchBar
+          variant="search"
+          label={value}
+          holder={`의 검색결과입니다.`}
         />
-        <p className="text-[30px]">more;ing</p>
-        <img src="/Menu.png" alt="Menu" className="w-[40px] h-[40px]" />
+        <div className="mt-[12px] mb-0 flex flex-row gap-[8px]">
+          {filters.map((f) => (
+            <FilteredList filtering={f} onClick={() => handleRemove(f)} />
+          ))}
+        </div>
       </div>
 
-      <div className="flex flex-row mb-[8px] p-[6px]">
-        <p>검색 결과입니다.</p>
+      <div className="flex flex-col items-center px-[16px] w-full max-w-4xl mx-auto">
+        {stores.map((store) => (
+          <StoreCard key={store.id} store={store} />
+        ))}
       </div>
-
-      <div className="flex flex-col items-center gap-6 w-full max-w-4xl mx-auto">
+      {/* <div className="flex flex-col items-center gap-6 w-full max-w-4xl mx-auto">
         {stores.length > 0 ? (
           stores.map((store) => <StoreCard key={store.id} store={store} />)
         ) : (
@@ -111,8 +132,8 @@ const Stores = () => {
             검색 결과가 없습니다🥺
           </div>
         )}
-      </div>
-    </div>
+      </div> */}
+    </>
   );
 };
 
