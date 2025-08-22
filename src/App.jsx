@@ -13,6 +13,11 @@ import Stores from './pages/Stores.jsx';
 import Favorite from './pages/Favorite.jsx';
 import StoreDetail from './pages/StoreDetail.jsx';
 import Setting from './pages/Setting.jsx';
+import Setting_Announce from './pages/Setting_Announce.jsx';
+import Setting_Chatting from './pages/Setting_Chatting.jsx';
+import Setting_Instagram from './pages/Setting_Instagram.jsx';
+import Setting_MyReviews from './pages/Setting_MyReviews.jsx';
+import Setting_Profile from './pages/Setting_Profile.jsx';
 //import StoreDetail_mock from './pages/StoreDetail_mock.jsx';
 import Stores_mock from './pages/Stores_mock.jsx';
 import './index.css';
@@ -37,6 +42,12 @@ function App() {
           <Route path="/stores" element={<Stores />} />
           <Route path="/store/:id" element={<StoreDetail />} />
           <Route path="/settings" element={<Setting />} />
+          <Route path="/setting_announce" element={<Setting_Announce />} />
+          <Route path="/setting_chatting" element={<Setting_Chatting />} />
+          <Route path="/setting_instagram" element={<Setting_Instagram />} />
+          <Route path="/setting_myreviews" element={<Setting_MyReviews />} />
+          <Route path="/setting_profile" element={<Setting_Profile />} />
+          {/* <Route path="/store/:id/mock" element={<StoreDetail_mock />} /> */}
         </Route>
       </Routes>
     </BrowserRouter>

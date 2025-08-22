@@ -55,22 +55,22 @@ const MyPage = () => {
         {/* 메뉴 목록 */}
         <div className="bg-white rounded-lgoverflow-hidden">
           {/* 2. 각 MenuItem에 맞는 iconSrc를 전달 */}
-          <MenuItem to="/profile-settings" iconSrc="/Human Head.png">
+          <MenuItem to="/setting_profile" iconSrc="/Human Head.png">
             프로필 설정
           </MenuItem>
-          <MenuItem to="/my-reviews" iconSrc="/Popular.png">
+          <MenuItem to="/setting_myreviews" iconSrc="/Popular.png">
             나의 리뷰 모아보기
           </MenuItem>
         </div>
 
         <div className="bg-white rounded-lg overflow-hidden mt-6">
-          <MenuItem to="/notices" iconSrc="/Noticeboard.png">
+          <MenuItem to="/setting_announce" iconSrc="/Noticeboard.png">
             공지사항
           </MenuItem>
-          <MenuItem to="/support" iconSrc="/Online Support.png">
+          <MenuItem to="/setting_chatting" iconSrc="/Online Support.png">
             지원팀과 채팅하기
           </MenuItem>
-          <MenuItem to="/instagram" iconSrc="/Instagram.png">
+          <MenuItem to="/setting_instagram" iconSrc="/Instagram.png">
             인스타그램
           </MenuItem>
         </div>
