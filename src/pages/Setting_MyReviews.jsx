@@ -5,7 +5,7 @@ import Header from '../components/Header.jsx';
 import { myReviews } from '../data/mockReviews'; // 1. Mock Data 불러오기
 import ReviewCard from '../components/ReviewCard.jsx'; // 2. ReviewCard 컴포넌트 불러오기
 
-const SettingMyReviews = () => {
+const Setting_MyReviews = () => {
   // 컴포넌트 이름은 대문자로 시작하는 것이 규칙입니다.
   return (
     <div>
@@ -22,4 +22,4 @@ const SettingMyReviews = () => {
   );
 };
 
-export default SettingMyReviews;
+export default Setting_MyReviews;
