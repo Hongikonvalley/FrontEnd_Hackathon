@@ -7,11 +7,8 @@ import DropdownMenu from '../components/DropdownMenu';
 
 const Main = () => {
   const navigate = useNavigate();
-
   const [selectedTime, setSelectedTime] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(false);
-  const [selectedFavorite, setSelectedFavorite] = useState(null);
-  const [selectedType, setSelectedType] = useState(null);
+  const [selectedSale, setSelectedSale] = useState(false);
 
   // 나중엔 메타 API(/search/filter)로 대체 가능
   const timeSlots = ['06:00-07:00', '07:00-08:00', '08:00-09:00'];
@@ -23,29 +20,24 @@ const Main = () => {
     'View_More',
   ];
 
-  const handleToggle = (type, value) => {
-    const table = {
-      time: setSelectedTime,
-      category: setSelectedCategory,
-      favorite: setSelectedFavorite,
-      type: setSelectedType,
-    };
-    table[type]?.((prev) => (prev === value ? null : value));
+  const handleTimeChange = (label) => {
+    // timeSlots가 '07:00-08:00' 형식이면 그대로 저장
+    setSelectedTime(label);
+  };
+
+  const handleTypeSelect = () => {
+    console.log('누름!');
   };
 
   const goToStores = () => {
     const params = {};
     if (selectedTime) params.time = selectedTime;
-    if (selectedCategory) params.category = selectedCategory;
+    if (selectedSale) params.sale = '1';
     navigate({ pathname: '/stores', search: `?${createSearchParams(params)}` });
   };
 
   const goToMockStores = () => {
     navigate('/stores_mock');
-  };
-
-  const goToCoupon = () => {
-    navigate('/coupon');
   };
 
   return (
@@ -66,7 +58,7 @@ const Main = () => {
             variant="main"
             holder="지금 떠오르는 메뉴를 검색해보세요."
             selectedTime={selectedTime}
-            selectedCategory={selectedCategory}
+            selectedSale={selectedSale}
           />
 
           {/* 토글 항목 */}
@@ -89,18 +81,22 @@ const Main = () => {
                     options={timeSlots}
                     placeholder={timeSlots[0]}
                     value={selectedTime}
-                    onChange={setSelectedTime}
-                    type=" rounded-[20px] shadow-md border-0 h-min py-0"
+                    onChange={handleTimeChange}
+                    design=" rounded-[20px] shadow-md border-0 h-min py-0"
                     font="medium"
                     rounded="[20px]"
+                    type="time"
                   />
                 </div>
               </div>
 
               <FilterButton
                 label="모닝세일"
-                selected={selectedCategory}
-                onClick={() => handleToggle('favorite', favorite)}
+                selected={selectedSale}
+                onClick={() => {
+                  setSelectedSale((v) => !v);
+                  console.log('got');
+                }}
               />
             </div>
           </div>
@@ -114,7 +110,7 @@ const Main = () => {
                 iconOnly={true}
                 isrc={`./${type}.svg`}
                 key="type"
-                onClick={handleToggle()}
+                onClick={() => handleTypeSelect()}
               />
             ))}
           </div>

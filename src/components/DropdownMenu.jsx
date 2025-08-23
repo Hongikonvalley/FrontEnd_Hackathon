@@ -5,13 +5,19 @@ export default function DropdownMenu({
   value,
   onChange,
   placeholder,
-  type = '',
+  design = '',
   font = 'semibold',
+  type = '',
 }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
 
-  const list = value ? [value, ...options.filter((o) => o !== value)] : options;
+  const list =
+    type === 'time'
+      ? options
+      : value
+        ? [value, ...options.filter((o) => o !== value)]
+        : options;
 
   // 바깥 클릭 시 닫기
   useEffect(() => {
@@ -30,24 +36,27 @@ export default function DropdownMenu({
       className="relative inline-flex overflow-visible text-[12px]"
     >
       <div
-        className={`relative z-50 w-fit border border-[#CBCBCB] justify-center items-end m-0 px-[6px] py-[3px] text-[12px] bg-white ${type} ${open ? '!rounded-[10px]' : ''}`}
+        className={`relative z-50 w-fit border border-[#CBCBCB] justify-center items-end m-0 px-[6px] py-[3px] text-[12px] bg-white ${design} ${open ? '!rounded-[10px]' : ''}`}
       >
         <img src="./down.svg" className="absolute top-[8px] " />
         {open ? (
-          list.map((label) => (
-            <button
-              type="button"
-              onClick={() => {
-                onChange?.(label);
-                setOpen(false);
-              }}
-              key={label}
-              className="h-auto w-auto pl-[12px] !rounded-[10px] bg-white
-                       hover:bg-gray-100 active:bg-gray-200 flex flex-col "
-            >
-              <span className={`text-[12px] font-${font}`}>{label}</span>
-            </button>
-          ))
+          list.map((label) => {
+            const active = label === value;
+            return (
+              <button
+                type="button"
+                onClick={() => {
+                  onChange?.(label);
+                  setOpen(false);
+                }}
+                key={label}
+                className={`h-auto w-auto pl-[12px] !rounded-[10px] flex flex-col bg-white
+                       hover:bg-gray-100 ${active ? 'bg-primary text-secondary' : ''}`}
+              >
+                <span className={`text-[12px] font-${font}`}>{label}</span>
+              </button>
+            );
+          })
         ) : (
           <button
             type="button"
