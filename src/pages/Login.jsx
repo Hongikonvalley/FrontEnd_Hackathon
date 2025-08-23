@@ -12,12 +12,12 @@ const Login = () => {
   const { setTokens } = useAuthStore(); // 3. setTokens 함수 가져오기
 
   const [formData, setFormData] = useState({
-    id: '',
+    username: '',
     password: '',
   });
 
   const isFormComplete =
-    formData.id.trim() !== '' && formData.password.trim() !== '';
+    formData.username.trim() !== '' && formData.password.trim() !== '';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,7 +31,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await signIn(formData.id, formData.password);
+      const response = await signIn(formData.username, formData.password);
 
       // 5. 서버로부터 받은 토큰을 Zustand에 저장
       setTokens(response.accessToken, response.refreshToken);
@@ -63,8 +63,8 @@ const Login = () => {
             {/* ID와 Password 입력 필드만 남김 */}
             <CommonInput
               label="ID"
-              name="id"
-              value={formData.id}
+              name="username"
+              value={formData.username}
               onChange={handleChange}
               placeholder="아이디를 입력하세요"
             />

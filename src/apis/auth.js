@@ -18,11 +18,13 @@ export const getCurrentUser = async () => {
   return res.data;
 };
 
-export const signIn = async (id, password) => {
-  // 백엔드와 약속된 주소 (예: /api/v1/auth/signin)로 요청을 보냅니다.
-  const res = await instance.post('/api/v1/auth/signin', {
-    id,
-    password,
+export const signIn = async (username, password) => {
+  const form = new URLSearchParams(); // x-www-form-urlencoded 본문
+  form.append('username', username); // ← 서버 스펙과 동일
+  form.append('password', password);
+
+  const res = await instance.post('/api/auth/login', form, {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   });
   return res.data;
 };
