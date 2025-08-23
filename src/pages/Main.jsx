@@ -3,6 +3,7 @@ import { useNavigate, createSearchParams } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
 import FilterButton from '../components/FilterButton';
 import Header from '../components/Header';
+import DropdownMenu from '../components/DropdownMenu';
 
 const Main = () => {
   const navigate = useNavigate();
@@ -71,19 +72,31 @@ const Main = () => {
           {/* 토글 항목 */}
           <div className="flex flex-col gap-[16px] justify-center mt-[16px]">
             {/* Time Group */}
-            <div className="flex flex-row justify-center items-center gap-[6px]">
-              <div className="flex flex-row items-center gap-[6px]">
-                <p className="text-[12px]">시간대</p>
+            <div className="flex flex-row justify-center items-start gap-[6px]">
+              <div className="flex flex-row gap-[6px]">
+                <p className="text-[12px] flex mt-[4px]">시간대</p>
                 {/* select */}
-                <select
+                {/* <select
                   key="시간대"
                   className="w-auto shadow-lg flex p-[2px] m-[8px] rounded-[20px] text-[12px] bg-white"
                 >
                   {timeSlots.map((time) => (
                     <option value={time}>{time}</option>
                   ))}
-                </select>
+                </select> */}
+                <div className="flex justify-items-start">
+                  <DropdownMenu
+                    options={timeSlots}
+                    placeholder={timeSlots[0]}
+                    value={selectedTime}
+                    onChange={setSelectedTime}
+                    type=" rounded-[20px] shadow-md border-0 h-min py-0"
+                    font="medium"
+                    rounded="[20px]"
+                  />
+                </div>
               </div>
+
               <FilterButton
                 label="모닝세일"
                 selected={selectedCategory}

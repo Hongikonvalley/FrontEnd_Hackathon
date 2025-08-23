@@ -16,6 +16,7 @@ import { stores } from '../data/mockStores';
 import SearchBar from '../components/SearchBar';
 import FilteredList from '../components/FilteredList';
 import { TbLabel } from 'react-icons/tb';
+import DropdownMenu from '../components/DropdownMenu';
 
 const Stores = () => {
   const { setShowNavBar } = useOutletContext();
@@ -32,6 +33,10 @@ const Stores = () => {
   const handleRemove = (target) => {
     setFilters((prev) => prev.filter((f) => f !== target));
   };
+
+  const option = ['거리순', '별점순'];
+  const [options, setOptions] = useState('');
+
   // // 확인
   // useEffect(() => {
   //   (async () => {
@@ -112,10 +117,19 @@ const Stores = () => {
           label={value}
           holder={`의 검색결과입니다.`}
         />
-        <div className="mt-[12px] mb-0 flex flex-row gap-[8px]">
-          {filters.map((f) => (
-            <FilteredList filtering={f} onClick={() => handleRemove(f)} />
-          ))}
+        <div className="flex flex-row justify-between items-start mt-[12px]">
+          <div className="mb-0 flex flex-row gap-[8px]">
+            {filters.map((f) => (
+              <FilteredList filtering={f} onClick={() => handleRemove(f)} />
+            ))}
+          </div>
+
+          <DropdownMenu
+            options={option}
+            value={options}
+            onChange={setOptions}
+            placeholder={option[0]}
+          />
         </div>
       </div>
 
