@@ -4,16 +4,18 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import CommonInput from '../components/CommonInput.jsx';
 import CommonButton from '../components/CommonButton.jsx';
+import { signIn } from '../apis/auth'; // 1. signIn 함수 import
+import { useAuthStore } from '../stores/useAuthStore'; // 2. Zustand 스토어 import
 
 const Login = () => {
   const navigate = useNavigate();
+  const { setTokens } = useAuthStore(); // 3. setTokens 함수 가져오기
 
   const [formData, setFormData] = useState({
     id: '',
     password: '',
   });
 
-  // ID와 비밀번호가 모두 채워졌는지 확인하는 변수
   const isFormComplete =
     formData.id.trim() !== '' && formData.password.trim() !== '';
 
@@ -25,12 +27,21 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  // 4. handleSubmit 함수를 async로 변경하고 API 호출 로직 추가
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: 실제 백엔드 로그인 API 연동 로직 추가
-    console.log('로그인 시도:', formData);
-    alert('로그인 성공!');
-    navigate('/main');
+    try {
+      const response = await signIn(formData.id, formData.password);
+
+      // 5. 서버로부터 받은 토큰을 Zustand에 저장
+      setTokens(response.accessToken, response.refreshToken);
+
+      alert('로그인 성공!');
+      navigate('/main');
+    } catch (error) {
+      console.error('로그인 실패:', error);
+      alert('로그인에 실패했습니다. 아이디 또는 비밀번호를 확인해주세요.');
+    }
   };
 
   const handleGoToRegister = () => {
