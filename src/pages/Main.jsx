@@ -133,7 +133,7 @@ const Main = () => {
 
               <div
                 className="flex items-center text-[12px] font-bold"
-                onClick={goToMockStores}
+                onClick={() => navigate('/hot_sale')}
               >
                 더보기
               </div>

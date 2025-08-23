@@ -22,6 +22,7 @@ import Setting_Profile from './pages/Setting_Profile.jsx';
 import Stores_mock from './pages/Stores_mock.jsx';
 import './index.css';
 import Register from './pages/Register.jsx';
+import Hot from './pages/Hot.jsx';
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
           <Route path="/setting_instagram" element={<Setting_Instagram />} />
           <Route path="/setting_myreviews" element={<Setting_MyReviews />} />
           <Route path="/setting_profile" element={<Setting_Profile />} />
+          <Route path="/hot_sale" element={<Hot />} />
           {/* <Route path="/store/:id/mock" element={<StoreDetail_mock />} /> */}
         </Route>
       </Routes>
