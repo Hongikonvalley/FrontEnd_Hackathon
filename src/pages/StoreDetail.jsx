@@ -1,16 +1,16 @@
 // src/pages/StoreDetail.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { stores } from '../data/mockStores';
 import KakaoMap from '../components/KakaoMap';
+import { useQuery } from '@tanstack/react-query';
+import { getStoreById, getStoreReviews } from '../apis/stores';
 import {
   FaStar,
   FaMapMarkerAlt,
   FaClock,
   FaRegImage,
   FaTimes,
-  FaMapMarkedAlt,
 } from 'react-icons/fa';
 import Header from '../components/Header';
 import { useAuthStore } from '../stores/useAuthStore'; //로그인 여부를 확인한 후 리뷰 작성 가능
@@ -18,43 +18,39 @@ import { useAuthStore } from '../stores/useAuthStore'; //로그인 여부를 확
 const StoreDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const store = stores.find((s) => s.id === parseInt(id));
   const { isLoggedIn } = useAuthStore(); // 로그인 여부 확인
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isFavorited, setIsFavorited] = useState(false);
+  const {
+    data: store,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['storeDetail', id],
+    queryFn: () => getStoreById(id),
+    enabled: !!id,
+  });
+
+  const { data: reviewData, isLoading: isReviewLoading } = useQuery({
+    queryKey: ['storeReviews', id],
+    queryFn: () => getStoreReviews(id),
+    enabled: !!id, // id가 있을 때만 요청
+  });
+
   const [showCopyAlert, setShowCopyAlert] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [reviews, setReviews] = useState([
-    {
-      author: '멋쟁이사자',
-      rating: 5,
-      text: '여기 정말 좋아요! 노트북 들고 와서 작업하기 너무 편하고, 특히 치즈케이크가 정말 맛있습니다. 재방문 의사 100%!',
-    },
-    {
-      author: '얼리버드',
-      rating: 4,
-      text: '아침 일찍 여는게 최고 장점! 커피 맛도 괜찮아요.',
-    },
-    {
-      author: '리뷰어123',
-      rating: 5,
-      text: '분위기가 너무 좋아서 자주 찾게 되네요.',
-    },
-    {
-      author: '방문객',
-      rating: 3,
-      text: '자리가 좀 협소한 것 빼고는 다 좋았어요.',
-    },
-    {
-      author: '학생',
-      rating: 4,
-      text: '팀플하기 좋은 장소입니다. 콘센트 많아서 좋아요.',
-    },
-  ]);
   const [newReviewText, setNewReviewText] = useState('');
   const [newReviewRating, setNewReviewRating] = useState(5);
   const [visibleReviewCount, setVisibleReviewCount] = useState(3);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [page, setPage] = useState(1); // 현재 페이지 번호 state
+  const [hasNextPage, setHasNextPage] = useState(true); // 다음 페이지 존재 여부
+
+  useEffect(() => {
+    if (store) {
+      setIsFavorited(store.user_context.is_favorite);
+    }
+  }, [store]);
 
   const handleShare = async () => {
     try {
@@ -83,10 +79,6 @@ const StoreDetail = () => {
     setNewReviewRating(5);
   };
 
-  const handleLoadMoreReviews = () => {
-    setVisibleReviewCount((prevCount) => prevCount + 3);
-  };
-
   // 3. 리뷰 작성창을 여는 핸들러 함수 생성
   const handleOpenReviewModal = () => {
     if (!isLoggedIn) {
@@ -97,30 +89,27 @@ const StoreDetail = () => {
     setIsReviewModalOpen(true);
   };
 
-  const augmentedStore = {
-    ...store,
-    menuImageUrl: 'https://example.com/images/menu_full.jpg',
-    keywords: [
-      '카공하기 좋은 곳',
-      '전좌석 콘센트',
-      '테라스',
-      '디저트 맛집',
-      '조용한',
-    ],
-    aiSummary:
-      '주로 오전 6시에 방문하고 아이스 아메리카노를 추천해요\n잉뉴님께서 좋아하시는 케이크와 한 잔 어떠세요?',
-    featuredReview: {
-      author: '멋쟁이사자',
-      rating: 5,
-      text: '여기 정말 좋아요! 노트북 들고 와서 작업하기 너무 편하고, 특히 치즈케이크가 정말 맛있습니다. 재방문 의사 100%!',
-    },
+  const handleLoadMoreReviews = () => {
+    // 보여줄 리뷰 개수를 3개씩 늘립니다.
+    setVisibleReviewCount((prevCount) => prevCount + 3);
   };
 
-  if (!store) {
-    return <div className="p-6">해당하는 가게 정보를 찾을 수 없습니다.</div>;
-  }
+  if (isLoading)
+    return <div className="p-6 text-center">가게 정보를 불러오는 중...</div>;
+  if (error)
+    return (
+      <div className="p-6 text-center text-red-500">오류가 발생했습니다.</div>
+    );
+  if (!store)
+    return (
+      <div className="p-6 text-center">
+        해당하는 가게 정보를 찾을 수 없습니다.
+      </div>
+    );
 
-  const naverMapUrl = `https://map.naver.com/v5/search/${encodeURIComponent(augmentedStore.name)}`;
+  const reviews = reviewData?.reviews || [];
+
+  const naverMapUrl = `https://map.naver.com/v5/search/${encodeURIComponent(store.name)}`;
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -156,14 +145,12 @@ const StoreDetail = () => {
 
         {/* 매장 이름과 별점 */}
         <div className="flex justify-between items-center mb-2">
-          <h1 className="text-4xl font-bold text-black">
-            {augmentedStore.name}
-          </h1>
+          <h1 className="text-4xl font-bold text-black">{store.name}</h1>
           <div className="flex items-center gap-1 text-xl font-bold">
             <FaStar className="text-primary" />
-            <span>{augmentedStore.reviewSummary.averageRating}</span>
+            <span>{store.average_rating}</span>
             <span className="text-sm font-normal text-gray-500">
-              ({augmentedStore.reviewSummary.totalReviews})
+              ({store.total_reviews})
             </span>
           </div>
         </div>
@@ -172,21 +159,23 @@ const StoreDetail = () => {
         <div className="flex flex-wrap justify-between items-center text-gray-600 border-b pb-4 mb-4">
           <div className="flex items-center gap-2">
             <FaMapMarkerAlt className="text-primary" />
-            <span>{augmentedStore.address}</span>
+            <span>{store.address}</span>
           </div>
+          {/*
           <div className="flex items-center gap-2">
             <FaClock className="text-primary" />
             <span>
-              {augmentedStore.openTime} ~ {augmentedStore.closeTime}
+              {store.openTime} ~ {store.closeTime}
             </span>
           </div>
+          */}
         </div>
 
         {/* 카카오 지도 */}
         <div className="mb-6 h-64 md:h-80 rounded-lg overflow-hidden shadow-md">
           <KakaoMap
-            lat={augmentedStore.location.latitude}
-            lng={augmentedStore.location.longitude}
+            lat={store.location.latitude}
+            lng={store.location.longitude}
             name={store.name}
           />
         </div>
@@ -213,9 +202,9 @@ const StoreDetail = () => {
           <div className="bg-white p-4 rounded-lg shadow-md">
             <div className="flex justify-between items-center">
               <div>
-                <p className="font-semibold">{augmentedStore.menu[0].name}</p>
+                <p className="font-semibold">{store.menus[0].name}</p>
                 <p className="text-gray-600">
-                  {augmentedStore.menu[0].price.toLocaleString()}원
+                  {store.menus[0].price.toLocaleString()}원
                 </p>
               </div>
               <button
@@ -233,7 +222,7 @@ const StoreDetail = () => {
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-4 text-black">포토</h2>
           <div className="flex overflow-x-auto gap-4 pb-4">
-            {augmentedStore.galleryImages.map((src, index) => (
+            {reviewData.photos.map((src, index) => (
               <div key={index} className="flex-shrink-0 w-40 h-40">
                 <img
                   src={src}
@@ -266,27 +255,31 @@ const StoreDetail = () => {
           <p className="text-gray-600 mb-4">
             리뷰를 작성하시면 10포인트를 드려요!
           </p>
+
           {/* AI 리뷰 요약 */}
           <div className="bg-orange-100 p-4 rounded-lg shadow-md mb-6">
             <h3 className="text-lg font-bold mb-2 text-secondary">
               more;ing AI
             </h3>
-            <p className="text-black">{augmentedStore.aiSummary}</p>
+            <p className="text-black">{reviewData.ai_summary.content}</p>
           </div>
+
           <div className="space-y-4">
-            {reviews.slice(0, visibleReviewCount).map((review, index) => (
-              <div key={index} className="bg-gray-50 p-4 rounded-lg">
+            {/* slice를 사용하여 visibleReviewCount 개수만큼만 리뷰를 표시 */}
+            {reviews.slice(0, visibleReviewCount).map((review) => (
+              <div key={review.id} className="bg-gray-50 p-4 rounded-lg">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-semibold">{review.author}</span>
+                  <span className="font-semibold">{review.user_nickname}</span>
                   <div className="flex items-center gap-1">
                     <FaStar className="text-primary" />
                     <span>{review.rating}</span>
                   </div>
                 </div>
-                <p className="text-gray-800">{review.text}</p>
+                <p className="text-gray-800">{review.content}</p>
               </div>
             ))}
           </div>
+          {isReviewLoading && <div>리뷰를 불러오는 중...</div>}
           {reviews.length > visibleReviewCount && (
             <div className="text-center mt-4">
               <button
@@ -355,11 +348,13 @@ const StoreDetail = () => {
             >
               <FaTimes />
             </button>
+            {/*
             <img
-              src={augmentedStore.menuImageUrl}
+              src={store.menuImageUrl}
               alt="메뉴판"
               className="w-full h-auto"
             />
+            */}
           </div>
         </div>
       )}

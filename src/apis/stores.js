@@ -85,3 +85,13 @@ export const getStoresByName = async (query) => {
     return [];
   }
 };
+
+export const getStoreReviews = async (storeId) => {
+  try {
+    const { data } = await instance.get(`/api/v1/stores/${storeId}/reviews`);
+    return data?.result ?? null; // API 응답의 result 객체를 반환
+  } catch (e) {
+    console.error('[getStoreReviews] FAIL:', e);
+    return null;
+  }
+};
