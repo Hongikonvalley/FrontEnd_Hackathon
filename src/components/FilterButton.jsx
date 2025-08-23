@@ -7,8 +7,8 @@ export default function FilterButton({
   disabled = false,
 }) {
   const base =
-    'flex items-center justify-center rounded-[20px] border border-transparent shadow-lg ' +
-    (selected ? 'bg-primary text-white' : 'bg-white') +
+    'flex items-center justify-center rounded-[20px] border border-transparent shadow-md ' +
+    (selected ? 'bg-secondary text-white' : 'bg-white') +
     ' ' +
     (disabled ? 'opacity-50 cursor-not-allowed' : 'hover:cursor-pointer') +
     ' focus:outline-none focus-visible:ring-2 focus-visible:ring-black/30';

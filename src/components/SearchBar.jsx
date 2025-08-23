@@ -6,7 +6,7 @@ const SearchBar = ({
   label = '',
   holder,
   selectedTime,
-  selectedCategory,
+  selectedSale,
 }) => {
   const [query, setQuery] = useState('');
   const [focused, setFocused] = useState(false);
@@ -22,8 +22,8 @@ const SearchBar = ({
     if (selectedTime) {
       params.append('time', selectedTime);
     }
-    if (selectedCategory) {
-      params.append('category', selectedCategory);
+    if (selectedSale) {
+      params.append('sale', selectedSale);
     }
 
     navigate(`/stores?${params.toString()}`);
