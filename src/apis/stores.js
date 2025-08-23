@@ -95,3 +95,14 @@ export const getStoreReviews = async (storeId) => {
     return null;
   }
 };
+
+export const getFavoriteStores = async () => {
+  try {
+    const { data } = await instance.get('/api/v1/stores/favorites');
+    // API 응답 구조에 맞춰 result.favorite_stores 배열을 반환
+    return data?.result?.favorite_stores ?? [];
+  } catch (e) {
+    console.error('[getFavoriteStores] API 요청 실패:', e);
+    return [];
+  }
+};
