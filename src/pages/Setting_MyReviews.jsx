@@ -7,7 +7,7 @@ import Header from '../components/Header.jsx';
 import ReviewCard from '../components/ReviewCard.jsx';
 
 const SettingMyReviews = () => {
-  const testUserId = 'mutsa@mutsa.shop';
+  const testUserId = 'user-잉뉴';
 
   // 2. user_id가 성공적으로 로드되면, 그 ID를 사용해 리뷰 목록을 요청합니다.
   const {
@@ -30,7 +30,10 @@ const SettingMyReviews = () => {
   return (
     <div>
       <Header title="나의 리뷰 모아보기" showBack={true} />
-      <div className="p-4 md:p-6 pt-20">
+      <h1 className="text-2xl font-bold text-center my-4">
+        나의 리뷰 모아보기
+      </h1>
+      <div className="p-4 md:p-6 ">
         {myReviews.length > 0 ? (
           myReviews.map((review) => (
             <ReviewCard key={review.review_id} review={review} />
