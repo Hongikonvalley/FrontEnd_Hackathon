@@ -106,3 +106,13 @@ export const getFavoriteStores = async () => {
     return [];
   }
 };
+
+export const getPopularStore = async () => {
+  try {
+    const { data } = await instance.get('/api/v1/stores/popular/today');
+    return data?.result ?? null; // API 응답의 result 객체를 반환
+  } catch (e) {
+    console.error('[getPopularStore] API 요청 실패:', e);
+    return null;
+  }
+};
