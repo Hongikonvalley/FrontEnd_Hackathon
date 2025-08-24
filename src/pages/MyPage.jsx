@@ -22,6 +22,8 @@ const MenuItem = ({ to, children, iconSrc }) => (
 );
 
 const MyPage = () => {
+  const testUserId = 'mutsa@mutsa.shop';
+
   const {
     data: user,
     isLoading,
@@ -32,8 +34,9 @@ const MyPage = () => {
   });
 
   const { data: pointData, isLoading: isPointLoading } = useQuery({
-    queryKey: ['userPoints'],
-    queryFn: getUserPoints,
+    queryKey: ['userPoints', testUserId], // queryKey에도 고정된 ID를 사용
+    queryFn: () => getUserPoints(testUserId),
+    enabled: !!testUserId, // 항상 실행되도록 보장
   });
 
   // 4. 로딩 및 에러 상태를 처리합니다.
@@ -69,9 +72,9 @@ const MyPage = () => {
             <h1>Point</h1>
           </div>
           <div className="flex justify-between items-end mt-2">
-            {/* 4. API로 받은 포인트 표시 (toLocaleString으로 콤마 추가) */}
+            {/* 4. API 명세서에 맞는 'point_balance'를 사용합니다. */}
             <p className="text-xl font-head text-white">
-              {pointData?.points.toLocaleString() ?? 0} 포인트
+              {pointData?.point_balance.toLocaleString() ?? 0} 포인트
             </p>
             <button className="bg-secondary text-white items-center px-3 py-1 rounded-lg hover:bg-secondary transition-colors font-bold">
               환전하기

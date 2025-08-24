@@ -40,10 +40,12 @@ export const getUserProfile = async () => {
   }
 };
 
-export const getUserPoints = async () => {
+export const getUserPoints = async (userId) => {
   try {
-    // 백엔드와 약속된 포인트 조회 URI (예시)
-    const { data } = await instance.get('/api/user/points');
+    // API 명세서에 나온 URI와 쿼리 파라미터를 사용합니다.
+    const { data } = await instance.get(`/api/v1/users/points`, {
+      params: { userId },
+    });
     return data?.result ?? null; // API 응답의 result 객체를 반환
   } catch (e) {
     console.error('[getUserPoints] API 요청 실패:', e);
