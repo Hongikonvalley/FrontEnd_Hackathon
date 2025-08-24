@@ -3,8 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import KakaoMap from '../components/KakaoMap';
-import { useQuery } from '@tanstack/react-query';
-import { getStoreById, getStoreReviews } from '../apis/stores';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  getStoreById,
+  getStoreReviews,
+  toggleFavoriteStore,
+} from '../apis/stores';
 import {
   FaStar,
   FaMapMarkerAlt,
@@ -19,6 +23,7 @@ const StoreDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isLoggedIn } = useAuthStore(); // 로그인 여부 확인
+  const queryClient = useQueryClient(); // 👈 이 라인을 추가하세요.
 
   const {
     data: store,
@@ -45,6 +50,33 @@ const StoreDetail = () => {
   const [isFavorited, setIsFavorited] = useState(false);
   const [page, setPage] = useState(1); // 현재 페이지 번호 state
   const [hasNextPage, setHasNextPage] = useState(true); // 다음 페이지 존재 여부
+  const [showFavoriteAlert, setShowFavoriteAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+
+  const favoriteMutation = useMutation({
+    mutationFn: () => toggleFavoriteStore(id),
+    onSuccess: (data) => {
+      try {
+        const newIsFavorited = data.result.is_favorite;
+
+        setIsFavorited(newIsFavorited);
+
+        setAlertMessage(data.result.message);
+
+        setShowFavoriteAlert(true);
+
+        setTimeout(() => setShowFavoriteAlert(false), 2000);
+
+        queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      } catch (e) {
+        console.error('onSuccess 내부에서 에러 발생:', e);
+      }
+    },
+    onError: () => {
+      // 에러 발생 시 알림
+      alert('즐겨찾기 처리에 실패했습니다.');
+    },
+  });
 
   useEffect(() => {
     if (store) {
@@ -132,11 +164,11 @@ const StoreDetail = () => {
           </div>
           <div className="flex items-center gap-4 text-2xl">
             <button
-              onClick={() => setIsFavorited(!isFavorited)}
+              onClick={() => favoriteMutation.mutate()}
               aria-label="Toggle Favorite"
             >
               <img
-                src="/Heart.png" // public 폴더의 Heart.png 사용
+                src="/Heart.png"
                 alt="Favorite"
                 className={`w-6 h-6 transition-opacity ${isFavorited ? 'opacity-100' : 'opacity-40'}`}
               />
@@ -306,6 +338,12 @@ const StoreDetail = () => {
       {showCopyAlert && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg z-50">
           URL이 복사되었습니다.
+        </div>
+      )}
+
+      {showFavoriteAlert && (
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+          {alertMessage}
         </div>
       )}
 
