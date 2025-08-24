@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, createSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query'; // 1. useQuery import
+import { getPopularStore } from '../apis/stores'; // 2. API 함수 import
 import SearchBar from '../components/SearchBar';
 import FilterButton from '../components/FilterButton';
 import Header from '../components/Header';
@@ -43,6 +45,11 @@ const Main = () => {
   const goToMockStores = () => {
     navigate('/stores_mock');
   };
+
+  const { data: popularStore, isLoading } = useQuery({
+    queryKey: ['popularStore'],
+    queryFn: getPopularStore,
+  });
 
   return (
     <>
@@ -142,30 +149,41 @@ const Main = () => {
         {/* 인기매장 */}
         <div className="mx-[20px] p-[16px] flex flex-col">
           <p className="font-extrabold text-[20px]">오늘의 인기 매장</p>
-          <div className="flex flex-row items-center">
-            <img
-              src="/gabiae.png"
-              alt="hot"
-              className="w-2/5 h-auto aspect-square rounded-[15px] object-cover my-[16px]"
-            />
-            <div className="pl-[16px] flex-grow">
-              <div className="flex flex-row items-center mt-[16px]">
-                <p className="text-[20px] font-black">가비애</p>
-                <p className="text-[20px] ml-2">⭐4.9</p>
+
+          {/* 4. 로딩 상태에 따라 UI를 다르게 보여줍니다. */}
+          {isLoading ? (
+            <div>인기 매장을 불러오는 중...</div>
+          ) : popularStore ? (
+            <div className="flex flex-row items-center">
+              <img
+                src={popularStore.rep_image_url}
+                alt={popularStore.store_name}
+                className="w-2/5 h-auto aspect-square rounded-[15px] object-cover my-[16px]"
+              />
+              <div className="pl-[16px] flex-grow">
+                <div className="flex flex-row items-center mt-[16px]">
+                  <p className="text-[20px] font-black">
+                    {popularStore.store_name}
+                  </p>
+                  <p className="text-[20px] ml-2">⭐{popularStore.rating}</p>
+                </div>
+                <p className="text-[14px] font-medium">
+                  {popularStore.business_info.status_message}
+                </p>
+                <p className="text-[14px] font-medium text-secondary">
+                  {popularStore.deal_info.title}
+                </p>
+                <button
+                  className="bg-primary text-white w-full p-2 h-[30px] rounded-[30px] flex justify-center items-center hover:cursor-pointer text-[14px] font-bold mt-[6px]"
+                  onClick={() => navigate(`/store/${popularStore.store_id}`)}
+                >
+                  자세히 보기
+                </button>
               </div>
-              <p className="text-[14px] font-medium">24시간 오픈</p>
-              <p className="text-[14px] font-medium text-secondary">
-                오전시간 사이즈업
-              </p>
-              <button
-                className="bg-primary text-white w-full p-2 h-[30px] rounded-[30px] flex justify-center items-center hover:cursor-pointer text-[14px] font-bold mt-[6px]"
-                //onClick={goToStores}
-                onClick={goToMockStores}
-              >
-                자세히 보기
-              </button>
             </div>
-          </div>
+          ) : (
+            <div>오늘의 인기 매장 정보가 없습니다.</div>
+          )}
         </div>
       </div>
     </>
