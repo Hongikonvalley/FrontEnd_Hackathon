@@ -31,25 +31,12 @@ const Header = ({ title, showBack }) => {
         )}
       </div>
 
-      {title === 'setting' ? (
-        <div className="w-1/12" />
-      ) : title === 'mypage' ? (
-        <img
-          src="/Settings.png"
-          alt="Settings"
-          onClick={() => {
-            navigate('/settings');
-          }}
-        />
-      ) : (
-        <img
-          src="/Menu.png"
-          alt="hmb"
-          onClick={() => {
-            navigate('/settings');
-          }}
-        />
-      )}
+      <img
+        src="/Settings.png"
+        alt="Settings"
+        className="w-8 h-8 cursor-pointer" // 아이콘 크기 예시
+        onClick={() => navigate('/settings')}
+      />
     </header>
   );
 };

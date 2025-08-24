@@ -19,19 +19,6 @@ const Navbar = () => {
     <div>
       <header className="fixed bottom-0 bg-white w-full flex justify-between items-center pb-[20px] pt-[16px] px-[40px] border-b inset-shadow-sm">
         <NavLink
-          to="/main"
-          className={({ isActive }) =>
-            isActive ? 'filter contrast-500' : 'filter contrast-50'
-          }
-        >
-          <img
-            src="/Home.svg"
-            alt="Main"
-            className="w-[40px] h-[40px] object-cover"
-          />
-        </NavLink>
-
-        <NavLink
           to="/favorite"
           className={({ isActive }) =>
             isActive ? 'filter contrast-500' : 'filter contrast-50'
@@ -45,14 +32,14 @@ const Navbar = () => {
         </NavLink>
 
         <NavLink
-          to="/coupon"
+          to="/main"
           className={({ isActive }) =>
             isActive ? 'filter contrast-500' : 'filter contrast-50'
           }
         >
           <img
-            src="/Loyalty-Card.svg"
-            alt="Cupon"
+            src="/Home.svg"
+            alt="Main"
             className="w-[40px] h-[40px] object-cover"
           />
         </NavLink>

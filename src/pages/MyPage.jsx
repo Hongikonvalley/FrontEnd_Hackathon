@@ -3,7 +3,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query'; // 1. useQuery import
-import { getUserProfile, getUserPoints } from '../apis/auth';
+import { getUserPoints } from '../apis/auth';
 import { FaChevronRight } from 'react-icons/fa';
 import Header from '../components/Header.jsx';
 
@@ -24,15 +24,6 @@ const MenuItem = ({ to, children, iconSrc }) => (
 const MyPage = () => {
   const testUserId = 'mutsa@mutsa.shop';
 
-  const {
-    data: user,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['userProfile'],
-    queryFn: getUserProfile,
-  });
-
   const { data: pointData, isLoading: isPointLoading } = useQuery({
     queryKey: ['userPoints', testUserId], // queryKey에도 고정된 ID를 사용
     queryFn: () => getUserPoints(testUserId),
@@ -40,12 +31,8 @@ const MyPage = () => {
   });
 
   // 4. 로딩 및 에러 상태를 처리합니다.
-  if (isLoading || isPointLoading)
+  if (isPointLoading)
     return <div className="p-4 text-center">사용자 정보를 불러오는 중...</div>;
-  if (error)
-    return (
-      <div className="p-4 text-center text-red-500">오류가 발생했습니다.</div>
-    );
 
   return (
     <div>
