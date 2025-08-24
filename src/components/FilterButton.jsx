@@ -5,9 +5,10 @@ export default function FilterButton({
   selected = false,
   onClick,
   disabled = false,
+  design = '',
 }) {
   const base =
-    'flex items-center justify-center rounded-[20px] border border-transparent shadow-md ' +
+    'flex items-center justify-center rounded-[20px] border border-transparent font-semibold ' +
     (selected ? 'bg-secondary text-white' : 'bg-white') +
     ' ' +
     (disabled ? 'opacity-50 cursor-not-allowed' : 'hover:cursor-pointer') +
@@ -17,16 +18,19 @@ export default function FilterButton({
     <button
       type="button"
       onClick={onClick}
-      className={iconOnly ? '' : 'px-[7px] py-[1px] text-[12px]' + ' ' + base}
+      className={`${design} + ${iconOnly ? '' : 'px-[7px] py-[1px] text-[12px]' + ' ' + base}`}
     >
       {iconOnly ? (
-        <span className="grid place-items-center p-[2px] overflow-hidden bg-primary rounded-[20px]">
-          <img
-            src={isrc}
-            alt={label}
-            className="pt-[5px] block w-full h-full aspect-square object-contain"
-          />
-        </span>
+        <div>
+          <span className="grid place-items-center flex-col p-[2px] overflow-hidden bg-primary rounded-[20px]">
+            <img
+              src={isrc}
+              alt={label}
+              className="pt-[5px] block w-full h-full aspect-square object-contain"
+            />
+          </span>
+          <p className="text-[12px] mt-[4px]">{label}</p>
+        </div>
       ) : (
         <span>{label}</span>
       )}

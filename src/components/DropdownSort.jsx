@@ -1,23 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 
-export default function DropdownMenu({
-  options = [], // ['5시부터 6시까지', '6시부터 7시까지', ...]
+export default function DropdownSort({
   value,
   onChange,
   placeholder,
   design = '',
   font = 'semibold',
-  type = '',
 }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
-
-  const list =
-    type === 'time'
-      ? options
-      : value
-        ? [value, ...options.filter((o) => o !== value)]
-        : options;
+  const option = ['거리순', '별점순'];
+  const [selectedSort, setSelectedSort] = useState(null);
 
   // 바깥 클릭 시 닫기
   useEffect(() => {
@@ -30,27 +23,32 @@ export default function DropdownMenu({
     return () => document.removeEventListener('mousedown', onDoc);
   }, [open]);
 
+  const handleToggleSort = (label) => {
+    setselectedSort(label);
+  };
+
   return (
     <div
       ref={wrapRef}
       className="relative inline-flex overflow-visible text-[12px]"
     >
       <div
-        className={`relative z-50 w-fit border border-[#CBCBCB] justify-center items-end m-0 px-[6px] py-[3px] text-[12px] bg-white ${design} ${open ? '!rounded-[10px]' : ''}`}
+        className={`relative z-50 w-fit h-fit border border-[#CBCBCB] justify-center items-end m-0 px-[6px] py-[2px] text-[12px] bg-white ${design} ${open ? '!rounded-[10px]' : ''}`}
       >
-        <img src="./down.svg" className="absolute top-[8px] " />
+        <img src="./down.svg" className="absolute top-[8px] object-cover " />
         {open ? (
-          list.map((label) => {
-            const active = label === value;
+          option.map((label) => {
+            const active = label === selectedSort;
             return (
               <button
                 type="button"
                 onClick={() => {
                   onChange?.(label);
                   setOpen(false);
+                  handleToggleSort(lable);
                 }}
                 key={label}
-                className={`h-auto w-auto pl-[12px] !rounded-[10px] flex flex-col bg-white
+                className={`h-fit w-auto pl-[12px] !rounded-[10px] flex flex-col bg-white
                        hover:bg-gray-100 ${active ? 'bg-primary text-secondary' : ''}`}
               >
                 <span className={`text-[12px] font-${font}`}>{label}</span>
@@ -61,7 +59,7 @@ export default function DropdownMenu({
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className={`w-fit pl-[12px] flex items-end font-${font}`}
+            className={`w-fit h-fit pl-[12px] py-0 flex items-end font-${font}`}
           >
             <span className={`text-[12px] text-black`}>
               {value || placeholder}

@@ -3,21 +3,22 @@ import { useNavigate, createSearchParams } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
 import FilterButton from '../components/FilterButton';
 import Header from '../components/Header';
-import DropdownMenu from '../components/DropdownMenu';
+import DropdownTime from '../components/DropdownTime';
 
 const Main = () => {
   const navigate = useNavigate();
   const [selectedTime, setSelectedTime] = useState(null);
   const [selectedSale, setSelectedSale] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   // 나중엔 메타 API(/search/filter)로 대체 가능
-  const timeSlots = ['06:00-07:00', '07:00-08:00', '08:00-09:00'];
+  // const timeSlots = ['06:00-07:00', '07:00-08:00', '08:00-09:00'];
   const typeSlots = [
-    'Coffee',
-    'Bakery',
-    'Hamburger',
-    'Soup_Plate',
-    'View_More',
+    { code: 'Coffee', label: '카페', icon: './Coffee.svg' },
+    { code: 'Bakery', label: '베이커리', icon: './Bakery.svg' },
+    { code: 'Hamburger', label: '양식', icon: './Hamburger.svg' },
+    { code: 'Soup_Plate', label: '한식', icon: './Soup_Plate.svg' },
+    { code: 'View_More', label: '더보기', icon: './View_More.svg' },
   ];
 
   const handleTimeChange = (label) => {
@@ -25,14 +26,17 @@ const Main = () => {
     setSelectedTime(label);
   };
 
-  const handleTypeSelect = () => {
+  const handleTypeSelect = (label) => {
     console.log('누름!');
+    setSelectedCategory(label);
+    console.log({ selectedCategory });
   };
 
   const goToStores = () => {
     const params = {};
     if (selectedTime) params.time = selectedTime;
     if (selectedSale) params.sale = '1';
+    if (selectedCategory) params.category = selectedCategory;
     navigate({ pathname: '/stores', search: `?${createSearchParams(params)}` });
   };
 
@@ -65,27 +69,17 @@ const Main = () => {
           <div className="flex flex-col gap-[16px] justify-center mt-[16px]">
             {/* Time Group */}
             <div className="flex flex-row justify-center items-start gap-[6px]">
-              <div className="flex flex-row gap-[6px]">
-                <p className="text-[12px] flex mt-[4px]">시간대</p>
-                {/* select */}
-                {/* <select
-                  key="시간대"
-                  className="w-auto shadow-lg flex p-[2px] m-[8px] rounded-[20px] text-[12px] bg-white"
-                >
-                  {timeSlots.map((time) => (
-                    <option value={time}>{time}</option>
-                  ))}
-                </select> */}
+              <div className="flex flex-row gap-[6px] mr-[8px]">
+                <p className="text-[12px] font-semibold mt-[2px]">오픈시간</p>
                 <div className="flex justify-items-start">
-                  <DropdownMenu
-                    options={timeSlots}
-                    placeholder={timeSlots[0]}
+                  <DropdownTime
+                    placeholder="오픈시간 선택"
                     value={selectedTime}
-                    onChange={handleTimeChange}
+                    // onChange={handleTimeChange}
                     design=" rounded-[20px] shadow-md border-0 h-min py-0"
                     font="medium"
                     rounded="[20px]"
-                    type="time"
+                    onChange={handleTimeChange}
                   />
                 </div>
               </div>
@@ -97,6 +91,7 @@ const Main = () => {
                   setSelectedSale((v) => !v);
                   console.log('got');
                 }}
+                design=" shadow-md"
               />
             </div>
           </div>
@@ -105,12 +100,16 @@ const Main = () => {
           {' '}
           <div className="font-semibold ">메뉴가 고민이라면?</div>
           <div className="grid grid-cols-5 gap-[10px] m-[5px]">
-            {typeSlots.map((type) => (
+            {typeSlots.map(({ code, label, icon }) => (
               <FilterButton
                 iconOnly={true}
-                isrc={`./${type}.svg`}
-                key="type"
-                onClick={() => handleTypeSelect()}
+                isrc={icon}
+                key={code}
+                onClick={() => {
+                  handleTypeSelect(code);
+                  goToStores();
+                }}
+                label={label}
               />
             ))}
           </div>
