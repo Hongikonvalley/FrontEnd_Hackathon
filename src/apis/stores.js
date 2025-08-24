@@ -1,4 +1,5 @@
 import instance from './axios';
+import qs from 'qs';
 
 const pickList = (data) =>
   Array.isArray(data?.result?.items) ? data.result.items : [];
@@ -41,24 +42,35 @@ export const fetchAllStores = async () => {
   }
 };
 
+const slotToStartTime = (slot) => (slot ? slot.split('-')[0] : '');
 export const getStoresFiltered = async ({
-  name = '',
-  time = '',
-  category = '',
-  sort = '',
+  name,
+  time, // '06:00-07:00' (UI 값)
+  dayOfWeek, // '월' | '화' | ... | ''  (UI 값)
+  sale,
+  category,
   page = 1,
   size = 20,
+  sort = 'distance',
 } = {}) => {
-  const params = {};
-  if (name.trim()) params.name = name.trim();
-  if (time) params.time = time;
-  if (category) params.category = category;
-  if (sort) params.sort = sort;
-  params.page = page;
-  params.size = size;
+  const params = {
+    ...(name && { name }),
+    ...(time && { time: slotToStartTime(time) }), // ★ 서버는 HH:mm만 받음
+    ...(dayOfWeek && { day_of_week: dayOfWeek }), // ★ 요일 파라미터
+    ...(sale === true && { sale: 1 }),
+    ...(category && { category }),
+    page,
+    size,
+    sort,
+  };
 
-  const { data } = await instance.get('api/v1/search/stores', { params });
-  return pickList(data); // ← 원본 그대로
+  const res = await axiosInstance.get('/api/v1/search/stores', {
+    params,
+    paramsSerializer: (p) =>
+      qs.stringify(p, { arrayFormat: 'repeat', encode: true }),
+  });
+
+  return res.data; // { items, pageInfo } 가정
 };
 
 export const getStoreById = async (id) => {
@@ -107,6 +119,67 @@ export const getFavoriteStores = async () => {
   }
 };
 
+
+// 메타
+export const getStoresMeta = async () => {
+  const res = await instance.get('/api/v1/search/filters'); // 실제 경로 확인!
+  // ✅ 응답: { is_success, code, result: { time_slots, ... } }
+  const result = res?.data?.result ?? {};
+  return {
+    categories: result.categories ?? [],
+    tags: result.tags ?? [],
+    sort_options: result.sort_options ?? [],
+    time_slots: result.time_slots ?? [],
+  };
+};
+
+// 메뉴
+export const getStoreMenus = async ({
+  storeId,
+  category, // '음료' | '디저트' ...
+  available, // true | false
+  q, // 메뉴 키워드
+  sort = 'name,asc', // name,asc|name,desc|price,asc|price,desc|createdAt,desc
+  page = 0,
+  size = 20,
+}) => {
+  const params = {
+    ...(category && { category }),
+    ...(typeof available === 'boolean' && { available }),
+    ...(q && { q }),
+    sort,
+    page,
+    size,
+  };
+
+  const res = await instance.get(`/api/v1/stores/${storeId}/menus`, {
+    params,
+    paramsSerializer: (p) =>
+      qs.stringify(p, { arrayFormat: 'repeat', encode: true }),
+  });
+
+  // 응답 스펙: data.data.content ...
+  const d = res?.data?.data ?? {};
+  return {
+    items: d.content ?? [],
+    page: d.page ?? 0,
+    size: d.size ?? size,
+    total: d.total_elements ?? 0,
+    totalPages: d.total_pages ?? 0,
+    sortedBy: d.sorted_by ?? sort,
+  };
+};
+
+/**
+ * 매장 내 메뉴 카테고리 메타
+ * GET /api/v1/stores/{storeId}/menus/meta/categories
+ */
+export const getStoreMenuCategoriesMeta = async (storeId) => {
+  const res = await instance.get(
+    `/api/v1/stores/${storeId}/menus/meta/categories`
+  );
+  return res?.data?.data ?? []; // [{category:'음료', count:12}, ...]
+=======
 export const getPopularStore = async () => {
   try {
     const { data } = await instance.get('/api/v1/stores/popular/today');
