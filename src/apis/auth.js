@@ -41,3 +41,18 @@ export const getUserPoints = async (userId) => {
     return null;
   }
 };
+
+export const getMyReviews = async (userId) => {
+  try {
+    const { data } = await instance.get('/api/v1/stores/reviews/my', {
+      params: { userId }, // 쿼리 파라미터로 userId 전달
+    });
+    // API 응답 구조에 맞춰 result.reviews 배열을 반환
+    console.log('리뷰 api 연결 성공');
+    console.log(data);
+    return data?.result?.reviews ?? [];
+  } catch (e) {
+    console.error('[getMyReviews] API 요청 실패:', e);
+    return [];
+  }
+};

@@ -119,6 +119,7 @@ export const getFavoriteStores = async () => {
   }
 };
 
+
 // 메타
 export const getStoresMeta = async () => {
   const res = await instance.get('/api/v1/search/filters'); // 실제 경로 확인!
@@ -178,4 +179,40 @@ export const getStoreMenuCategoriesMeta = async (storeId) => {
     `/api/v1/stores/${storeId}/menus/meta/categories`
   );
   return res?.data?.data ?? []; // [{category:'음료', count:12}, ...]
+=======
+export const getPopularStore = async () => {
+  try {
+    const { data } = await instance.get('/api/v1/stores/popular/today');
+    return data?.result ?? null; // API 응답의 result 객체를 반환
+  } catch (e) {
+    console.error('[getPopularStore] API 요청 실패:', e);
+    return null;
+  }
+};
+
+export const toggleFavoriteStore = async ({ storeId, isFavorite }) => {
+  try {
+    const uri = `/api/v1/stores/${storeId}/favorite`;
+
+    // isFavorite 값에 따라 DELETE 또는 POST 요청
+    const response = isFavorite
+      ? await instance.delete(uri)
+      : await instance.post(uri);
+
+    return response.data;
+  } catch (e) {
+    console.error('[toggleFavoriteStore] API 요청 실패:', e);
+    throw e;
+  }
+};
+
+export const getMorningSaleStores = async () => {
+  try {
+    const { data } = await instance.get('/api/v1/stores/morning-sale');
+    // API 응답 구조에 맞춰 result.stores 배열을 반환
+    return data?.result?.stores ?? [];
+  } catch (e) {
+    console.error('[getMorningSaleStores] API 요청 실패:', e);
+    return [];
+  }
 };

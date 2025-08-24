@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, createSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query'; // 1. useQuery import
+import { getPopularStore, getMorningSaleStores } from '../apis/stores';
 import SearchBar from '../components/SearchBar';
 import FilterButton from '../components/FilterButton';
 import Header from '../components/Header';
 import DropdownTime from '../components/DropdownTime';
+import { Link } from 'react-router-dom';
 
 const Main = () => {
   const navigate = useNavigate();
@@ -43,6 +46,16 @@ const Main = () => {
   const goToMockStores = () => {
     navigate('/stores_mock');
   };
+
+  const { data: popularStore, isLoading } = useQuery({
+    queryKey: ['popularStore'],
+    queryFn: getPopularStore,
+  });
+
+  const { data: saleStores = [], isLoading: isSaleLoading } = useQuery({
+    queryKey: ['morningSaleStores'],
+    queryFn: getMorningSaleStores,
+  });
 
   return (
     <>
@@ -114,58 +127,81 @@ const Main = () => {
             ))}
           </div>
         </div>
-        {/* HOT 모닝세일 */}
         <div className="border-b-1 border-[#DBDBDB] mx-[20px] mt-[8px] mb-0 p-[16px] flex flex-col">
           <p className="font-extrabold text-[20px]">오늘의 HOT 모닝세일</p>
           <div className="flex flex-row justify-between items-center">
-            <div className="flex flex-row gap-[12px] ">
-              <img
-                src="/hdcafe.png"
-                alt="coupon"
-                className="w-2/5 h-auto aspect-square rounded-[15px] object-cover mt-[16px]"
-              />
-              <img
-                src="/angel.png"
-                alt="coupon"
-                className="w-2/5 h-auto aspect-square rounded-[15px] object-cover mt-[16px]"
-              />
-
-              <div
-                className="flex items-center text-[12px] font-bold"
-                onClick={() => navigate('/hot_sale')}
-              >
-                더보기
-              </div>
+            {/* 👇 API로 받아온 데이터로 UI를 동적으로 생성합니다. */}
+            <div className="flex flex-row gap-[12px] flex-grow">
+              {isSaleLoading ? (
+                <div>로딩 중...</div>
+              ) : (
+                saleStores.map((store) => (
+                  <Link
+                    to={`/store/${store.store_id}`}
+                    key={store.store_id}
+                    className="w-2/5"
+                  >
+                    <img
+                      src={store.rep_image_url}
+                      alt={store.store_name}
+                      className="w-full h-auto aspect-square rounded-[15px] object-cover"
+                    />
+                    <p className="bg-primary text-white w-full p-2 h-[30px] rounded-[30px] flex justify-center items-center hover:cursor-pointer text-[14px] font-bold mt-[6px]">
+                      {store.store_name}
+                    </p>
+                    <p className="text-sm text-secondary truncate">
+                      {store.display_text}
+                    </p>
+                  </Link>
+                ))
+              )}
+            </div>
+            <div
+              className="flex items-center text-[12px] font-bold cursor-pointer self-start"
+              onClick={() => navigate('/hot_sale')}
+            >
+              더보기
             </div>
           </div>
         </div>
         {/* 인기매장 */}
         <div className="mx-[20px] p-[16px] flex flex-col">
           <p className="font-extrabold text-[20px]">오늘의 인기 매장</p>
-          <div className="flex flex-row items-center">
-            <img
-              src="/gabiae.png"
-              alt="hot"
-              className="w-2/5 h-auto aspect-square rounded-[15px] object-cover my-[16px]"
-            />
-            <div className="pl-[16px] flex-grow">
-              <div className="flex flex-row items-center mt-[16px]">
-                <p className="text-[20px] font-black">가비애</p>
-                <p className="text-[20px] ml-2">⭐4.9</p>
+
+          {/* 4. 로딩 상태에 따라 UI를 다르게 보여줍니다. */}
+          {isLoading ? (
+            <div>인기 매장을 불러오는 중...</div>
+          ) : popularStore ? (
+            <div className="flex flex-row items-center">
+              <img
+                src={popularStore.rep_image_url}
+                alt={popularStore.store_name}
+                className="w-2/5 h-auto aspect-square rounded-[15px] object-cover my-[16px]"
+              />
+              <div className="pl-[16px] flex-grow">
+                <div className="flex flex-row items-center mt-[16px]">
+                  <p className="text-[20px] font-black">
+                    {popularStore.store_name}
+                  </p>
+                  <p className="text-[20px] ml-2">⭐{popularStore.rating}</p>
+                </div>
+                <p className="text-[14px] font-medium">
+                  {popularStore.business_info.status_message}
+                </p>
+                <p className="text-[14px] font-medium text-secondary">
+                  {popularStore.deal_info.title}
+                </p>
+                <button
+                  className="bg-primary text-white w-full p-2 h-[30px] rounded-[30px] flex justify-center items-center hover:cursor-pointer text-[14px] font-bold mt-[6px]"
+                  onClick={() => navigate(`/store/${popularStore.store_id}`)}
+                >
+                  자세히 보기
+                </button>
               </div>
-              <p className="text-[14px] font-medium">24시간 오픈</p>
-              <p className="text-[14px] font-medium text-secondary">
-                오전시간 사이즈업
-              </p>
-              <button
-                className="bg-primary text-white w-full p-2 h-[30px] rounded-[30px] flex justify-center items-center hover:cursor-pointer text-[14px] font-bold mt-[6px]"
-                //onClick={goToStores}
-                onClick={goToMockStores}
-              >
-                자세히 보기
-              </button>
             </div>
-          </div>
+          ) : (
+            <div>오늘의 인기 매장 정보가 없습니다.</div>
+          )}
         </div>
       </div>
     </>

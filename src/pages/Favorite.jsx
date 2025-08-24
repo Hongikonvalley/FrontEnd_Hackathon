@@ -28,7 +28,7 @@ const Favorite = () => {
   return (
     <div>
       <Header title="즐겨찾기" showBack={true} />
-      <div className="p-4 md:p-6 pt-20">
+      <div className="p-4 md:p-6">
         {favorites.length > 0 ? (
           // 즐겨찾기 목록이 있으면 카드를 나열
           favorites.map((fav) => (
