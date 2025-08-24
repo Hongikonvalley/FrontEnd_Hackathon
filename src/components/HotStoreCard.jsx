@@ -40,7 +40,7 @@ const HotStoreCard = ({ store }) => {
         )}
 
         {/* deal_info 또는 display_text가 있을 때 할인 정보 표시 */}
-        <div className="mt-2 pt-2 border-t">
+        <div className="mt-2 pt-2">
           <p className="tex-[16px] font-bold text-secondary">
             {store.deal_info?.title || store.display_text}
           </p>
