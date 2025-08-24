@@ -15,7 +15,9 @@ import Header from '../components/Header';
 import { stores } from '../data/mockStores';
 import SearchBar from '../components/SearchBar';
 import FilteredList from '../components/FilteredList';
-import DropdownMenu from '../components/DropdownMenu';
+import DropdownTime from '../components/DropdownTime';
+import DropdownSort from '../components/DropdownSort';
+import FilterButton from '../components/FilterButton';
 
 const sortLabel = (s) => (s === 'rating' ? '별점순' : '거리순');
 const sortValue = (label) => (label === '별점순' ? 'rating' : 'distance');
@@ -40,6 +42,20 @@ const Stores = () => {
   const { setShowNavBar } = useOutletContext();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedTime, setSelectedTime] = useState('');
+
+  // URL -> 필터
+  const filters = useMemo(() => {
+    const saleRaw = (searchParams.get('sale') ?? '').toLowerCase();
+    const sale = saleRaw === '1' || saleRaw === 'true';
+    return {
+      name: (searchParams.get('name') ?? searchParams.get('q') ?? '').trim(),
+      time: searchParams.get('time') ?? '', // '07:00-08:00'
+      sale,
+      category: (searchParams.get('category') ?? '').trim(), // ✅ null-safe
+      sort: searchParams.get('sort') ?? 'distance',
+    };
+  }, [searchParams]);
 
   // 쓰는 키에 맞춰서 (예: name 또는 q)
   const raw = searchParams.get('name') ?? searchParams.get('q') ?? '';
@@ -47,8 +63,7 @@ const Stores = () => {
   // +를 공백으로 보이게 하고 싶으면
   const value = raw.replace(/\+/g, ' ');
 
-  const option = ['거리순', '별점순'];
-  const [options, setOptions] = useState('');
+  // const [options, setOptions] = useState('');
 
   const upsertParams = useCallback(
     (patch) => {
@@ -63,17 +78,6 @@ const Stores = () => {
     [searchParams, setSearchParams]
   );
 
-  // URL -> 필터
-  const filters = useMemo(() => {
-    const saleRaw = (searchParams.get('sale') ?? '').toLowerCase();
-    const sale = saleRaw === '1' || saleRaw === 'true'; // ← 문자열 'true'/'1' 처리
-    return {
-      name: (searchParams.get('name') ?? searchParams.get('q') ?? '').trim(),
-      time: searchParams.get('time') ?? '',
-      sale, // ✅
-      sort: searchParams.get('sort') ?? 'distance',
-    };
-  }, [searchParams]);
   // 필터 -> 칩(표시용)
   const chips = useMemo(() => {
     const arr = [];
@@ -91,19 +95,11 @@ const Stores = () => {
     [upsertParams]
   );
 
-  // // 확인
-  // useEffect(() => {
-  //   (async () => {
-  //     try {
-  //       const list = await fetchAllStores();
-  //       console.log('[DEBUG] ALL STORES:', list);
-  //       console.log('[DEBUG] COUNT:', list.length);
-  //       if (list[0]) console.log('[DEBUG] FIRST:', list[0]);
-  //     } catch (e) {
-  //       console.error('[DEBUG] fetchAllStores FAIL', e);
-  //     }
-  //   })();
-  // }, []);
+  const timeSlots = ['06:00-07:00', '07:00-08:00', '08:00-09:00'];
+  const handleTimeChange = (label) => {
+    // timeSlots가 '07:00-08:00' 형식이면 그대로 저장
+    setSelectedTime(label);
+  };
 
   // 내비바 숨김 처리
   useEffect(() => {
@@ -111,45 +107,6 @@ const Stores = () => {
     return () => setShowNavBar(true);
   }, [setShowNavBar]);
 
-  // const filters = Object.fromEntries(searchParams.entries());
-
-  // // 메타 조회
-  // const { data: meta } = useQuery({
-  //   queryKey: ['search/filter'],
-  //   queryFn: getStoresByFilter,
-  // });
-  // const categories = meta?.categories ?? [];
-  // const times = meta?.times ?? [];
-
-  // const {
-  //   data: stores = [],
-  //   isLoading,
-  //   error,
-  // } = useQuery({
-  //   //queryKey: ['stores', filters.name, filters.time, filters.category],
-  //   queryKey: ['stores', filters],
-
-  /*
-      queryFn: () => {
-      const hasAnyFilter =
-        !!filters.name || !!filters.time || !!filters.category;
-      // ★ 반드시 반환해야 함
-      return hasAnyFilter ? getStoresFiltered(filters) : fetchAllStores();
-    },
-    */
-  //   queryFn: () => getStoresFiltered(filters),
-  //   keepPreviousData: true,
-  // });
-
-  // if (isLoading) return <div className="p-4 text-center">검색 중...</div>;
-  // if (error)
-  //   return (
-  //     <div className="p-4 text-center text-red-500">
-  //       오류가 발생했습니다: {error.message}
-  //     </div>
-  //   );
-
-  const handleTimeChange = (label) => upsertParams({ time: chipToTime(label) });
   const handleSortChange = (label) => upsertParams({ sort: sortValue(label) });
 
   return (
@@ -165,18 +122,36 @@ const Stores = () => {
         />
         <div className="flex flex-row justify-between items-start mt-[12px]">
           <div className="mb-0 flex flex-row gap-[8px]">
-            {chips.map((f) => (
+            {/* {chips.map((f) => (
               <FilteredList filtering={f} onClick={() => removeChip(f)} />
-            ))}
+            ))} */}
+            <FilterButton
+              label="모닝세일"
+              selected={filters.sale}
+              onClick={() => {
+                upsertParams({ sale: filters.sale ? '' : '1' });
+                console.log('got');
+              }}
+            />{' '}
           </div>
 
-          <DropdownMenu
-            options={option}
-            value={sortLabel(filters.sort) || ''}
-            onChange={handleSortChange}
-            placeholder={option[0]}
-            design="rounded-[10px]"
-          />
+          <div className="flex gap-[6px]">
+            <DropdownTime
+              // options={timeSlots}
+              placeholder={filters.time ? timeToChip(filters.time) : ''}
+              value={filters.time}
+              onChange={(t) => upsertParams({ time: t })}
+              design=" rounded-[20px] bg-primary h-min py-0"
+              font="medium"
+              rounded="[20px]"
+            />
+            <DropdownSort
+              value={sortLabel(filters.sort) || ''}
+              onChange={handleSortChange}
+              design="rounded-[20px]"
+              font="medium"
+            />
+          </div>
         </div>
       </div>
 
