@@ -52,6 +52,14 @@ const StoreDetail = () => {
     }
   }, [store]);
 
+  useEffect(() => {
+    if (reviewData) {
+      console.log('--- [Debug] 서버로부터 받은 리뷰 데이터 원본 ---');
+      console.log(reviewData);
+      console.log('-------------------------------------------');
+    }
+  }, [reviewData]);
+
   const handleShare = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -222,10 +230,11 @@ const StoreDetail = () => {
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-4 text-black">포토</h2>
           <div className="flex overflow-x-auto gap-4 pb-4">
-            {reviewData.photos.map((src, index) => (
+            {/* API로부터 받은 photos 배열을 map으로 순회 */}
+            {reviewData.photos.map((imageUrl, index) => (
               <div key={index} className="flex-shrink-0 w-40 h-40">
                 <img
-                  src={src}
+                  src={imageUrl}
                   alt={`포토리뷰 ${index + 1}`}
                   className="w-full h-full object-cover rounded-lg shadow-md"
                 />

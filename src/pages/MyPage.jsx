@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query'; // 1. useQuery import
+import { getUserProfile, getUserPoints } from '../apis/auth';
 import { FaChevronRight } from 'react-icons/fa';
 import Header from '../components/Header.jsx';
 
@@ -20,6 +22,28 @@ const MenuItem = ({ to, children, iconSrc }) => (
 );
 
 const MyPage = () => {
+  const {
+    data: user,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: getUserProfile,
+  });
+
+  const { data: pointData, isLoading: isPointLoading } = useQuery({
+    queryKey: ['userPoints'],
+    queryFn: getUserPoints,
+  });
+
+  // 4. 로딩 및 에러 상태를 처리합니다.
+  if (isLoading || isPointLoading)
+    return <div className="p-4 text-center">사용자 정보를 불러오는 중...</div>;
+  if (error)
+    return (
+      <div className="p-4 text-center text-red-500">오류가 발생했습니다.</div>
+    );
+
   return (
     <div>
       <Header title="mypage" showBack={true} />
@@ -40,12 +64,15 @@ const MyPage = () => {
 
         {/* 2. 포인트 박스 */}
         <div className="bg-primary p-6 rounded-lg shadow-md mb-8">
-          <div className="flex itmes-center gap-2">
+          <div className="flex items-center gap-2">
             <h1 className="text-lg font-head text-black">more;ing</h1>
             <h1>Point</h1>
           </div>
           <div className="flex justify-between items-end mt-2">
-            <p className="text-xl font-head text-white">1,250 포인트</p>
+            {/* 4. API로 받은 포인트 표시 (toLocaleString으로 콤마 추가) */}
+            <p className="text-xl font-head text-white">
+              {pointData?.points.toLocaleString() ?? 0} 포인트
+            </p>
             <button className="bg-secondary text-white items-center px-3 py-1 rounded-lg hover:bg-secondary transition-colors font-bold">
               환전하기
             </button>

@@ -28,3 +28,25 @@ export const signIn = async (username, password) => {
   });
   return res.data;
 };
+
+export const getUserProfile = async () => {
+  try {
+    // API 명세서에 나온 URI '/api/user/me'를 사용합니다.
+    const { data } = await instance.get('/api/user/me');
+    return data?.result ?? null; // API 응답의 result 객체를 반환
+  } catch (e) {
+    console.error('[getUserProfile] API 요청 실패:', e);
+    return null;
+  }
+};
+
+export const getUserPoints = async () => {
+  try {
+    // 백엔드와 약속된 포인트 조회 URI (예시)
+    const { data } = await instance.get('/api/user/points');
+    return data?.result ?? null; // API 응답의 result 객체를 반환
+  } catch (e) {
+    console.error('[getUserPoints] API 요청 실패:', e);
+    return null;
+  }
+};
