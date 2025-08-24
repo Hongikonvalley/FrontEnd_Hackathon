@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, createSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query'; // 1. useQuery import
-import { getPopularStore } from '../apis/stores'; // 2. API 함수 import
+import { getPopularStore, getMorningSaleStores } from '../apis/stores';
 import SearchBar from '../components/SearchBar';
 import FilterButton from '../components/FilterButton';
 import Header from '../components/Header';
 import DropdownTime from '../components/DropdownTime';
+import { Link } from 'react-router-dom';
 
 const Main = () => {
   const navigate = useNavigate();
@@ -49,6 +50,11 @@ const Main = () => {
   const { data: popularStore, isLoading } = useQuery({
     queryKey: ['popularStore'],
     queryFn: getPopularStore,
+  });
+
+  const { data: saleStores = [], isLoading: isSaleLoading } = useQuery({
+    queryKey: ['morningSaleStores'],
+    queryFn: getMorningSaleStores,
   });
 
   return (
@@ -121,28 +127,40 @@ const Main = () => {
             ))}
           </div>
         </div>
-        {/* HOT 모닝세일 */}
         <div className="border-b-1 border-[#DBDBDB] mx-[20px] mt-[8px] mb-0 p-[16px] flex flex-col">
           <p className="font-extrabold text-[20px]">오늘의 HOT 모닝세일</p>
           <div className="flex flex-row justify-between items-center">
-            <div className="flex flex-row gap-[12px] ">
-              <img
-                src="/hdcafe.png"
-                alt="coupon"
-                className="w-2/5 h-auto aspect-square rounded-[15px] object-cover mt-[16px]"
-              />
-              <img
-                src="/angel.png"
-                alt="coupon"
-                className="w-2/5 h-auto aspect-square rounded-[15px] object-cover mt-[16px]"
-              />
-
-              <div
-                className="flex items-center text-[12px] font-bold"
-                onClick={() => navigate('/hot_sale')}
-              >
-                더보기
-              </div>
+            {/* 👇 API로 받아온 데이터로 UI를 동적으로 생성합니다. */}
+            <div className="flex flex-row gap-[12px] flex-grow">
+              {isSaleLoading ? (
+                <div>로딩 중...</div>
+              ) : (
+                saleStores.map((store) => (
+                  <Link
+                    to={`/store/${store.store_id}`}
+                    key={store.store_id}
+                    className="w-2/5"
+                  >
+                    <img
+                      src={store.rep_image_url}
+                      alt={store.store_name}
+                      className="w-full h-auto aspect-square rounded-[15px] object-cover"
+                    />
+                    <p className="bg-primary text-white w-full p-2 h-[30px] rounded-[30px] flex justify-center items-center hover:cursor-pointer text-[14px] font-bold mt-[6px]">
+                      {store.store_name}
+                    </p>
+                    <p className="text-sm text-secondary truncate">
+                      {store.display_text}
+                    </p>
+                  </Link>
+                ))
+              )}
+            </div>
+            <div
+              className="flex items-center text-[12px] font-bold cursor-pointer self-start"
+              onClick={() => navigate('/hot_sale')}
+            >
+              더보기
             </div>
           </div>
         </div>

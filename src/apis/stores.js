@@ -132,3 +132,14 @@ export const toggleFavoriteStore = async ({ storeId, isFavorite }) => {
     throw e;
   }
 };
+
+export const getMorningSaleStores = async () => {
+  try {
+    const { data } = await instance.get('/api/v1/stores/morning-sale');
+    // API 응답 구조에 맞춰 result.stores 배열을 반환
+    return data?.result?.stores ?? [];
+  } catch (e) {
+    console.error('[getMorningSaleStores] API 요청 실패:', e);
+    return [];
+  }
+};
