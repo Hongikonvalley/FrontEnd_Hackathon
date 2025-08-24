@@ -117,14 +117,18 @@ export const getPopularStore = async () => {
   }
 };
 
-export const toggleFavoriteStore = async (storeId) => {
+export const toggleFavoriteStore = async ({ storeId, isFavorite }) => {
   try {
-    // API 명세서에 나온 URI를 사용 (메서드는 POST로 가정)
-    const { data } = await instance.post(`/api/v1/stores/${storeId}/favorite`);
-    console.log(data);
-    return data;
+    const uri = `/api/v1/stores/${storeId}/favorite`;
+
+    // isFavorite 값에 따라 DELETE 또는 POST 요청
+    const response = isFavorite
+      ? await instance.delete(uri)
+      : await instance.post(uri);
+
+    return response.data;
   } catch (e) {
     console.error('[toggleFavoriteStore] API 요청 실패:', e);
-    throw e; // 에러가 발생했을 때 useMutation에서 처리할 수 있도록 에러를 다시 던집니다.
+    throw e;
   }
 };

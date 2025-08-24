@@ -54,26 +54,23 @@ const StoreDetail = () => {
   const [alertMessage, setAlertMessage] = useState('');
 
   const favoriteMutation = useMutation({
-    mutationFn: () => toggleFavoriteStore(id),
+    // isFavorited 상태를 함께 전달
+    mutationFn: () =>
+      toggleFavoriteStore({ storeId: id, isFavorite: isFavorited }),
+
     onSuccess: (data) => {
-      try {
-        const newIsFavorited = data.result.is_favorite;
+      const newIsFavorited = data.result.is_favorite;
+      setIsFavorited(newIsFavorited);
 
-        setIsFavorited(newIsFavorited);
+      setAlertMessage(data.result.message); // "즐겨찾기에 추가/삭제되었습니다" 메시지
+      setShowFavoriteAlert(true);
+      setTimeout(() => setShowFavoriteAlert(false), 2000);
 
-        setAlertMessage(data.result.message);
-
-        setShowFavoriteAlert(true);
-
-        setTimeout(() => setShowFavoriteAlert(false), 2000);
-
-        queryClient.invalidateQueries({ queryKey: ['favorites'] });
-      } catch (e) {
-        console.error('onSuccess 내부에서 에러 발생:', e);
-      }
+      // 즐겨찾기 목록과 현재 가게 상세 정보 쿼리를 모두 무효화하여 최신 상태로 업데이트
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      queryClient.invalidateQueries({ queryKey: ['storeDetail', id] });
     },
     onError: () => {
-      // 에러 발생 시 알림
       alert('즐겨찾기 처리에 실패했습니다.');
     },
   });
