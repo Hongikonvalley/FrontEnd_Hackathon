@@ -7,6 +7,8 @@ const SearchBar = ({
   holder,
   selectedTime,
   selectedSale,
+  selectedCategory,
+  selectedDay,
 }) => {
   const [query, setQuery] = useState('');
   const [focused, setFocused] = useState(false);
@@ -16,18 +18,13 @@ const SearchBar = ({
   const handleSearch = () => {
     const params = new URLSearchParams();
 
-    if (query.trim()) {
-      params.append('name', query.trim());
-    }
-    if (selectedTime) {
-      params.append('time', selectedTime);
-    }
-    if (selectedSale) {
-      params.append('sale', selectedSale);
-    }
+    if (query.trim()) params.append('name', query.trim());
+    if (selectedTime) params.append('time', selectedTime);
+    if (selectedSale) params.append('sale', selectedSale);
+    if (selectedCategory) params.set('category', selectedCategory);
+    if (selectedDay) params.set('day', selectedDay); // ★ 요일 유지
 
     navigate(`/stores?${params.toString()}`);
-
     setQuery('');
     inputRef.current?.blur();
   };

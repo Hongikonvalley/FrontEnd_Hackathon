@@ -5,16 +5,14 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import {
-  fetchAllStores,
-  getStoresByName,
-  getStoresFiltered,
-} from '../apis/stores';
+import { useFilteredStores } from '../hooks/useFilteredStores';
+import { useStoresMeta } from '../hooks/useStoresMeta';
+import { useStoresByMenuKeyword } from '../hooks/useStoresMenu';
+import { getStoresFiltered } from '../apis/stores';
 import StoreCard from '../components/StoreCard';
 import Header from '../components/Header';
-import { stores } from '../data/mockStores';
+// import { stores } from '../data/mockStores';
 import SearchBar from '../components/SearchBar';
-import FilteredList from '../components/FilteredList';
 import DropdownTime from '../components/DropdownTime';
 import DropdownSort from '../components/DropdownSort';
 import FilterButton from '../components/FilterButton';
@@ -43,19 +41,33 @@ const Stores = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedTime, setSelectedTime] = useState('');
+  const { data: meta } = useStoresMeta();
+  const timeOptions = meta?.time_slots ?? [];
+  const KOR_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
+  const todayKorDay = KOR_DAYS[new Date().getDay()]; // 기본값
 
   // URL -> 필터
   const filters = useMemo(() => {
     const saleRaw = (searchParams.get('sale') ?? '').toLowerCase();
     const sale = saleRaw === '1' || saleRaw === 'true';
+    const KOR_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
+    const today = KOR_DAYS[new Date().getDay()];
     return {
-      name: (searchParams.get('name') ?? searchParams.get('q') ?? '').trim(),
-      time: searchParams.get('time') ?? '', // '07:00-08:00'
+      q: (searchParams.get('q') ?? searchParams.get('name') ?? '').trim(), // ← 검색어 통합
+      time: searchParams.get('time') ?? '',
+      day: searchParams.get('day') ?? today,
       sale,
-      category: (searchParams.get('category') ?? '').trim(), // ✅ null-safe
+      category: (searchParams.get('category') ?? '').trim(),
       sort: searchParams.get('sort') ?? 'distance',
+      page: Number(searchParams.get('page') ?? '1'),
     };
   }, [searchParams]);
+
+  const useMenuMode = !!filters.q;
+
+  useEffect(() => {
+    console.log('[timeOptions]', timeOptions);
+  }, [timeOptions]);
 
   // 쓰는 키에 맞춰서 (예: name 또는 q)
   const raw = searchParams.get('name') ?? searchParams.get('q') ?? '';
@@ -78,28 +90,66 @@ const Stores = () => {
     [searchParams, setSearchParams]
   );
 
-  // 필터 -> 칩(표시용)
-  const chips = useMemo(() => {
-    const arr = [];
-    if (filters.time) arr.push(timeToChip(filters.time));
-    if (filters.sale) arr.push('모닝세일');
-    return arr;
-  }, [filters]);
+  // ✅ 메뉴 모드일 때
+  const {
+    data: menuStores,
+    isLoading: loadingMenu,
+    isError: errorMenu,
+  } = useStoresByMenuKeyword({
+    q: filters.q,
+    time: filters.time,
+    dayOfWeek: filters.day,
+    sale: filters.sale,
+    category: filters.category,
+    page: filters.page,
+    size: 20,
+    sort: filters.sort,
+    availableOnly: true,
+    candidateFromName: true,
+  });
 
-  // 칩 제거
-  const removeChip = useCallback(
-    (label) => {
-      if (label === '모닝세일') upsertParams({ sale: '' });
-      else if (/\d/.test(label)) upsertParams({ time: '' }); // 시간칩
+  // ✅ 메뉴 모드가 아닐 때 (기존 훅)
+  // NOTE: 기존 useFilteredStores 훅 구현이 name을 받는다면 q를 name에 할당해도 됨.
+  const {
+    data: plainData,
+    isLoading: loadingPlain,
+    isError: errorPlain,
+  } = useFilteredStores(
+    {
+      q: undefined,
+      name: '', // ← 매장명으로는 검색 안 함
+      time: filters.time,
+      dayOfWeek: filters.day,
+      sale: filters.sale,
+      category: filters.category,
+      page: filters.page,
+      size: 20,
+      sort: filters.sort,
     },
-    [upsertParams]
-  );
+    { enabled: !useMenuMode }
+  ); // 훅이 옵션 객체 받으면 enabled 전달
 
-  const timeSlots = ['06:00-07:00', '07:00-08:00', '08:00-09:00'];
-  const handleTimeChange = (label) => {
-    // timeSlots가 '07:00-08:00' 형식이면 그대로 저장
-    setSelectedTime(label);
-  };
+  // ✅ 최종 표시 데이터
+  const items = useMenuMode
+    ? (menuStores ?? [])
+    : (plainData?.result?.items ?? plainData?.items ?? []);
+
+  const isLoading = useMenuMode ? loadingMenu : loadingPlain;
+  const isError = useMenuMode ? errorMenu : errorPlain;
+
+  // // ★ 데이터 패칭
+  // const { data, isLoading } = useFilteredStores({
+  //   name: filters.name,
+  //   time: filters.time, // "06:00-07:00" -> API에서 "06:00"으로 변환됨
+  //   dayOfWeek: filters.day, // ★ 요일 전달
+  //   sale: filters.sale,
+  //   category: filters.category,
+  //   page: filters.page,
+  //   size: 20,
+  //   sort: filters.sort,
+  // });
+
+  // const items = data?.result?.items ?? data?.items ?? [];
 
   // 내비바 숨김 처리
   useEffect(() => {
@@ -118,13 +168,14 @@ const Stores = () => {
         <SearchBar
           variant="search"
           label={value}
-          holder={`의 검색결과입니다.`}
+          holder="의 검색결과입니다."
+          selectedTime={filters.time}
+          selectedSale={filters.sale}
+          selectedCategory={filters.category}
+          selectedDay={filters.day} // ★ 추가
         />
         <div className="flex flex-row justify-between items-start mt-[12px]">
           <div className="mb-0 flex flex-row gap-[8px]">
-            {/* {chips.map((f) => (
-              <FilteredList filtering={f} onClick={() => removeChip(f)} />
-            ))} */}
             <FilterButton
               label="모닝세일"
               selected={filters.sale}
@@ -132,16 +183,27 @@ const Stores = () => {
                 upsertParams({ sale: filters.sale ? '' : '1' });
                 console.log('got');
               }}
-            />{' '}
+            />
           </div>
+          <select
+            value={filters.day}
+            onChange={(e) => upsertParams({ day: e.target.value, page: 1 })}
+            className="border rounded-[10px] px-3 py-2 mr-2"
+          >
+            {KOR_DAYS.map((d) => (
+              <option key={d} value={d}>
+                {d}요일
+              </option>
+            ))}
+          </select>
 
           <div className="flex gap-[6px]">
             <DropdownTime
-              // options={timeSlots}
+              options={timeOptions}
               placeholder={filters.time ? timeToChip(filters.time) : ''}
               value={filters.time}
               onChange={(t) => upsertParams({ time: t })}
-              design=" rounded-[20px] bg-primary h-min py-0"
+              design=" rounded-[20px] h-min py-0"
               font="medium"
               rounded="[20px]"
             />
@@ -156,19 +218,19 @@ const Stores = () => {
       </div>
 
       <div className="flex flex-col items-center px-[16px] w-full max-w-4xl mx-auto">
-        {stores.map((store) => (
-          <StoreCard key={store.id} store={store} />
-        ))}
-      </div>
-      {/* <div className="flex flex-col items-center gap-6 w-full max-w-4xl mx-auto">
-        {stores.length > 0 ? (
-          stores.map((store) => <StoreCard key={store.id} store={store} />)
+        {isLoading ? (
+          <div className="mt-8">불러오는 중 ...</div>
+        ) : isError ? (
+          <div className="mt-8 text-red-500">검색 실패 😢</div>
+        ) : items.length ? (
+          items.map((store) => (
+            <StoreCard key={store.id ?? store.store_id} store={store} />
+          ))
         ) : (
-          <div className="font-Inter flex justify-center mt-[32px] text-xl">
-            검색 결과가 없습니다🥺
-          </div>
+          <div className="mt-8 text-gray-500">검색 결과가 없습니다 🥺</div>
         )}
-      </div> */}
+      </div>
+      <div className="flex flex-col items-center gap-6 w-full max-w-4xl mx-auto"></div>
     </>
   );
 };
