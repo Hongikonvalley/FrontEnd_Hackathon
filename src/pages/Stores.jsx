@@ -44,13 +44,6 @@ const iconMap = {
   brunch: '/Brunch.svg',
 };
 
-// const typeSlots = [
-//   { code: 'Coffee', label: '카페', icon: './Coffee.svg' },
-//   { code: 'Bakery', label: '베이커리', icon: './Bakery.svg' },
-//   { code: 'Salad', label: '샐러드', icon: './Salad.svg' },
-//   { code: 'Brunch', label: '브런치', icon: './Brunch.svg' },
-// ];
-
 const Stores = () => {
   const { setShowNavBar } = useOutletContext();
   const navigate = useNavigate();
@@ -72,7 +65,7 @@ const Stores = () => {
     const KOR_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
     const today = KOR_DAYS[new Date().getDay()];
     return {
-      q: (searchParams.get('q') ?? '').trim(), // ← 검색어 통합
+      q: (searchParams.get('q') ?? searchParams.get('name') ?? '').trim(), // ← 검색어 통합
       time: searchParams.get('time') ?? '',
       day: searchParams.get('day') ?? today,
       sale,
@@ -82,7 +75,7 @@ const Stores = () => {
     };
   }, [searchParams]);
 
-  const useMenuMode = false;
+  const useMenuMode = !!filters.q;
 
   useEffect(() => {
     console.log('[timeOptions]', timeOptions);
@@ -90,9 +83,9 @@ const Stores = () => {
 
   // 쓰는 키에 맞춰서 (예: name 또는 q)
   const value =
-    searchParams.get('name') ??
-    searchParams.get('category_id') ??
     searchParams.get('q') ??
+    // searchParams.get('name') ??
+    searchParams.get('category_id') ??
     '';
 
   // const [options, setOptions] = useState('');
@@ -115,18 +108,21 @@ const Stores = () => {
     data: menuStores,
     isLoading: loadingMenu,
     isError: errorMenu,
-  } = useStoresByMenuKeyword({
-    name: filters.q,
-    time: filters.time,
-    dayofweek: dayToIndex(filters.day),
-    sale: filters.sale,
-    category_id: filters.category,
-    page: filters.page,
-    size: 20,
-    // sort: filters.sort,
-    availableOnly: true,
-    candidateFromName: true,
-  });
+  } = useStoresByMenuKeyword(
+    {
+      q: filters.q,
+      time: filters.time,
+      dayofweek: dayToIndex(filters.day),
+      sale: filters.sale,
+      category_id: filters.category,
+      page: filters.page,
+      size: 20,
+      // sort: filters.sort,
+      availableOnly: true,
+      candidateFromName: true,
+    },
+    { enabled: !!filters.q }
+  );
 
   // ✅ 메뉴 모드가 아닐 때 (기존 훅)
   // NOTE: 기존 useFilteredStores 훅 구현이 name을 받는다면 q를 name에 할당해도 됨.
@@ -148,42 +144,23 @@ const Stores = () => {
     { enabled: true }
   ); // 훅이 옵션 객체 받으면 enabled 전달
 
-  // const rawItems = useMenuMode
-  //   ? Array.isArray(menuStores)
-  //     ? menuStores
-  //     : (menuStores?.items ?? [])
-  //   : (plainData?.result?.items ?? plainData?.items ?? []);
-
-  // const keyword = (filters.q || '').toLowerCase().trim();
-  // const items = keyword
-  //   ? rawItems.filter((s) => {
-  //       const name = (s.store_name ?? s.name ?? '').toString().toLowerCase();
-  //       return name.includes(keyword);
-  //     })
-  //   : rawItems;
-
-  // const isLoading = useMenuMode ? loadingMenu : loadingPlain;
-  // const isError = useMenuMode ? errorMenu : errorPlain;
-
   const selectedCatId = filters.category;
   const dimOthers = !!selectedCatId;
-  const items = plainData?.result?.items ?? plainData?.items ?? [];
-  const isLoading = loadingPlain;
-  const isError = errorPlain;
 
-  // // ★ 데이터 패칭
-  // const { data, isLoading } = useFilteredStores({
-  //   name: filters.name,
-  //   time: filters.time, // "06:00-07:00" -> API에서 "06:00"으로 변환됨
-  //   dayofweek: filters.day, // ★ 요일 전달
-  //   sale: filters.sale,
-  //   category: filters.category,
-  //   page: filters.page,
-  //   size: 20,
-  //   sort: filters.sort,
-  // });
+  const menuList = Array.isArray(menuStores)
+    ? menuStores
+    : (menuStores?.items ?? []);
+  const storeList = plainData?.result?.items ?? plainData?.items ?? [];
 
-  // const items = data?.result?.items ?? data?.items ?? [];
+  // 메뉴 결과 우선, 없으면 매장 결과로 폴백
+  const items = useMenuMode
+    ? menuList.length > 0
+      ? menuList
+      : storeList
+    : storeList;
+
+  const isLoading = useMenuMode ? loadingMenu : loadingPlain;
+  const isError = useMenuMode ? errorMenu : errorPlain;
 
   // 내비바 숨김 처리
   useEffect(() => {
@@ -192,14 +169,6 @@ const Stores = () => {
   }, [setShowNavBar]);
 
   const handleSortChange = (label) => upsertParams({ sort: sortValue(label) });
-
-  // console.log('meta:', meta);
-  // console.log('categories:', categories);
-  // console.log(
-  //   'category ids:',
-  //   categories.map((c) => c.id)
-  // );
-  // console.log(filters.category);
 
   return (
     <>

@@ -3,8 +3,10 @@
 import React, { use } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { stores } from '../data/mockStores'; // Mock Data 불러오기
+// import { stores } from '../data/mockStores'; // Mock Data 불러오기
 import PropTypes from 'prop-types';
+import { getStoreById } from '../apis/stores';
+
 const StoreCard = ({ store }) => {
   // const representativeMenu =
   //   store.menu && store.menu.length > 0 ? store.menu[0] : null;

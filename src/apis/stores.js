@@ -54,7 +54,7 @@ const DAY_KR_TO_EN = {
 };
 
 export const getStoresFiltered = async ({
-  name,
+  q,
   time, // '06:00-07:00' (UI 값)
   dayofweek, // '월' | '화' | ... | ''  (UI 값)
   sale,
@@ -69,7 +69,7 @@ export const getStoresFiltered = async ({
   //   sort === 'distance' && (lat == null || lng == null) ? 'rating' : sort;
 
   const params = {
-    ...(name && { name }),
+    ...(q && { q }),
     ...(timeStart && { time: slotToStartTime(time) }), // ★ 서버는 HH:mm만 받음
     ...(dayofweek && { day_of_week: day_en }), // ★ 요일 파라미터
     ...(sale === true && { sale: 1 }),
@@ -91,26 +91,6 @@ export const getStoresFiltered = async ({
     items: data?.result?.items ?? data?.items ?? [],
     pageInfo: data?.result?.pageInfo ?? data?.pageInfo ?? null,
   };
-};
-
-// 매장별 메뉴 검색 (존재 여부만 확인용, size=1)
-export const searchMenusInStore = async (
-  storeId,
-  { q, availableOnly = true }
-) => {
-  const res = await instance.get(`/api/v1/stores/${storeId}/menus`, {
-    params: {
-      q,
-      ...(availableOnly ? { available: true } : {}),
-      size: 1, // 존재 여부만 알면 되니까 1
-      page: 0,
-    },
-  });
-  const data = res?.data?.data ?? res?.data?.result ?? res?.data;
-  // 표준화: 총 개수/첫 페이지 content 존재 여부를 체크
-  const content = data?.content ?? [];
-  const total = data?.total_elements ?? data?.totalElements ?? content.length;
-  return total > 0 || content.length > 0;
 };
 
 export const getStoreById = async (id) => {
@@ -189,7 +169,7 @@ export async function getStoreMenus({
   const keyword = String(q).trim().toLowerCase();
 
   const listResp = await getStoresFiltered({
-    name: '',
+    q: '',
     time,
     dayofweek,
     sale,
