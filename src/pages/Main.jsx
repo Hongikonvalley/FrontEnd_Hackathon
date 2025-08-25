@@ -7,11 +7,9 @@ import FilterButton from '../components/FilterButton';
 import Header from '../components/Header';
 import DropdownTime from '../components/DropdownTime';
 import { Link } from 'react-router-dom';
-import { getCurrentUser } from '../apis/auth';
+import { useStoresMeta } from '../hooks/useStoresMeta';
 
 const Main = () => {
-  const testUserId = 'mutsa@mutsa.shop';
-
   const navigate = useNavigate();
   const [selectedTime, setSelectedTime] = useState(null);
   const [selectedSale, setSelectedSale] = useState(false);
@@ -31,24 +29,23 @@ const Main = () => {
     { code: 'Brunch', label: '브런치', icon: './Brunch.svg', id: 'brunch' },
   ];
 
-  const handleTimeChange = (label) => {
-    // timeSlots가 '07:00-08:00' 형식이면 그대로 저장
-    setSelectedTime(label);
+  const { data: meta } = useStoresMeta();
+  const timeSlots = meta?.timeSlots ?? []; // ["06:00-07:00", "07:00-08:00", ...]
+
+  // ✅ 드롭다운에서 풀 슬롯이 내려오면 start만 저장
+  const handleTimeChange = (slot /* "HH:mm-HH:mm" */) => {
+    const [start] = String(slot).split('-'); // "HH:mm"
+    setSelectedTime(start);
   };
+
+  const selectedFullSlot =
+    selectedTime && timeSlots.find((s) => s.startsWith(selectedTime));
 
   const handleTypeSelect = (catId) => {
     const params = {};
     if (selectedTime) params.time = selectedTime;
     if (selectedSale) params.sale = '1';
     params.category_id = catId; // ✅ 카테고리 추가
-    navigate({ pathname: '/stores', search: `?${createSearchParams(params)}` });
-  };
-
-  const goToStores = () => {
-    const params = {};
-    if (selectedTime) params.time = selectedTime;
-    if (selectedSale) params.sale = '1';
-    if (selectedCategory) params.category = selectedCategory;
     navigate({ pathname: '/stores', search: `?${createSearchParams(params)}` });
   };
 
@@ -62,11 +59,9 @@ const Main = () => {
     queryFn: getMorningSaleStores,
   });
 
-  const { data: user, isLoading: isUserLoading } = useQuery({
-    queryKey: ['userProfile'],
-    queryFn: getCurrentUser,
-    enabled: !!testUserId, // getUserProfile로 변경
-  });
+  console.log('[timeSlots]', timeSlots);
+  console.log('[selectedTime(HH:mm)]', selectedTime);
+  console.log('[selectedFullSlot]', selectedFullSlot);
 
   return (
     <>
@@ -77,7 +72,7 @@ const Main = () => {
         {/* search bar div */}
         <div className="bg-primary rounded-[20px] mx-[30px] my-[16px] p-[22px] flex flex-col">
           <div className="font-bold text-[20px]">
-            <p className="text-2xl font-bold">{user?.nickname}님,</p>
+            <p>윤서님,</p>
             <p>좋은 아침이에요</p>
             <p>오늘은 어디에서 시작할까요?</p>
           </div>
@@ -98,12 +93,12 @@ const Main = () => {
                 <div className="flex justify-items-start">
                   <DropdownTime
                     placeholder="오픈시간 선택"
-                    value={selectedTime}
-                    // onChange={handleTimeChange}
+                    value={selectedFullSlot || ''}
+                    onChange={handleTimeChange}
                     design=" rounded-[20px] shadow-md border-0 h-min py-0"
                     font="medium"
                     rounded="[20px]"
-                    onChange={handleTimeChange}
+                    options={timeSlots}
                   />
                 </div>
               </div>

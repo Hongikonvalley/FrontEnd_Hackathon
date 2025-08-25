@@ -42,56 +42,155 @@ export const fetchAllStores = async () => {
   }
 };
 
-const slotToStartTime = (slot) => (slot ? slot.split('-')[0] : '');
-const DAY_KR_TO_EN = {
-  일: 6,
-  월: 0,
-  화: 1,
-  수: 2,
-  목: 3,
-  금: 4,
-  토: 5,
+// const slotToStartTime = (slot) => (slot ? slot.split('-')[0] : '');
+// const DAY_KR_TO_EN = {
+//   일: 6,
+//   월: 0,
+//   화: 1,
+//   수: 2,
+//   목: 3,
+//   금: 4,
+//   토: 5,
+// };
+const KOR_DAY_TO_INDEX = { 일: 0, 월: 1, 화: 2, 수: 3, 목: 4, 금: 5, 토: 6 };
+const ENG_DAY_TO_INDEX = {
+  sun: 0,
+  sunday: 0,
+  mon: 1,
+  monday: 1,
+  tue: 2,
+  tues: 2,
+  tuesday: 2,
+  wed: 3,
+  weds: 3,
+  wednesday: 3,
+  thu: 4,
+  thur: 4,
+  thurs: 4,
+  thursday: 4,
+  fri: 5,
+  friday: 5,
+  sat: 6,
+  saturday: 6,
 };
+
+function normalizeDayOfWeek(dayofweek) {
+  if (dayofweek === '' || dayofweek == null) return undefined;
+
+  // 숫자/문자숫자 '0'~'6'
+  const n = Number(dayofweek);
+  if (!Number.isNaN(n) && n >= 0 && n <= 6) return n;
+
+  if (typeof dayofweek === 'string') {
+    const s = dayofweek.trim().toLowerCase();
+    if (KOR_DAY_TO_INDEX[s] != null) return KOR_DAY_TO_INDEX[s];
+    if (ENG_DAY_TO_INDEX[s] != null) return ENG_DAY_TO_INDEX[s];
+  }
+  return undefined;
+}
+
+// '06:00-07:00' -> '06:00', 이미 'HH:mm'이면 그대로 반환
+function slotToStartTime(slot) {
+  if (!slot) return undefined;
+  if (/^\d{2}:\d{2}$/.test(slot)) return slot;
+  const m = /^(\d{2}:\d{2})-\d{2}:\d{2}$/.exec(slot);
+  if (m) return m[1];
+  return undefined; // 형식이 다르면 전송 안 함
+}
 
 export const getStoresFiltered = async ({
   q,
-  time, // '06:00-07:00' (UI 값)
-  dayofweek, // '월' | '화' | ... | ''  (UI 값)
+  time, // UI: '06:00-07:00' 또는 'HH:mm'
+  dayofweek, // UI: '월' | 0~6 | '' 등
   sale,
   category_id,
   page = 1,
   size = 20,
-  // sort = 'distance',
+  sort, // 필요시만 넘겨줘 (안전)
 } = {}) => {
-  const timeStart = slotToStartTime(time);
-  const day_en = dayofweek ? DAY_KR_TO_EN[dayofweek] : undefined;
-  // const safeSort =
-  //   sort === 'distance' && (lat == null || lng == null) ? 'rating' : sort;
+  const timeStart = slotToStartTime(time); // 서버는 HH:mm만 받음
+  const dayIdx = normalizeDayOfWeek(dayofweek); // 서버는 0~6 숫자만 받음
 
+  // ⚠️ 0은 falsy라서 명시적으로 체크해야 함
   const params = {
-    ...(q && { q }),
-    ...(timeStart && { time: slotToStartTime(time) }), // ★ 서버는 HH:mm만 받음
-    ...(dayofweek && { day_of_week: day_en }), // ★ 요일 파라미터
-    ...(sale === true && { sale: 1 }),
-    ...(category_id && { category_id }),
-    // ...(safeSort === 'distancae' && { lat, lng }),
+    ...(q ? { q } : {}),
+    ...(timeStart ? { time: timeStart } : {}),
+    ...(dayIdx !== undefined ? { day_of_week: dayIdx } : {}),
+    ...(sale === true ? { sale: 1 } : {}),
+    ...(category_id ? { category_id } : {}),
     page,
     size,
-    // sort: safeSort,
+    ...(sort ? { sort } : {}), // 서버가 지원할 때만 사용
   };
 
-  const res = await instance.get('/api/v1/search/stores', {
-    params,
-    paramsSerializer: (p) =>
-      qs.stringify(p, { arrayFormat: 'repeat', encode: true }),
-  });
-  // 백 응답이 { result: { items: [...] } } 또는 { items: [...] } 둘 다 커버
-  const data = res?.data;
-  return {
-    items: data?.result?.items ?? data?.items ?? [],
-    pageInfo: data?.result?.pageInfo ?? data?.pageInfo ?? null,
-  };
+  try {
+    // 디버깅 필요하면 주석 해제
+    // console.log('[getStoresFiltered] params', params);
+
+    const res = await instance.get('/api/v1/search/stores', {
+      params,
+      paramsSerializer: (p) =>
+        qs.stringify(p, { arrayFormat: 'repeat', encode: true }),
+    });
+
+    const data = res?.data;
+    return {
+      items: data?.result?.items ?? data?.items ?? [],
+      pageInfo: data?.result?.pageInfo ?? data?.pageInfo ?? null,
+    };
+  } catch (err) {
+    const status = err?.response?.status;
+    const body = err?.response?.data;
+    // console.error('[getStoresFiltered] error', status, body || err?.message);
+    // React Query에서 보기 쉽게 정보 포함해서 다시 throw
+    throw Object.assign(
+      new Error(
+        `getStoresFiltered failed: ${status ?? ''} ${typeof body === 'string' ? body : JSON.stringify(body)}`
+      ),
+      { cause: err, status, data: body }
+    );
+  }
 };
+
+// export const getStoresFiltered = async ({
+//   q,
+//   time, // '06:00-07:00' (UI 값)
+//   dayofweek, // '월' | '화' | ... | ''  (UI 값)
+//   sale,
+//   category_id,
+//   page = 1,
+//   size = 20,
+//   // sort = 'distance',
+// } = {}) => {
+//   const timeStart = slotToStartTime(time);
+//   const day_en = dayofweek ? DAY_KR_TO_EN[dayofweek] : undefined;
+//   // const safeSort =
+//   //   sort === 'distance' && (lat == null || lng == null) ? 'rating' : sort;
+
+//   const params = {
+//     ...(q && { q }),
+//     ...(timeStart && { time: slotToStartTime(time) }), // ★ 서버는 HH:mm만 받음
+//     ...(dayofweek && { day_of_week: day_en }), // ★ 요일 파라미터
+//     ...(sale === true && { sale: 1 }),
+//     ...(category_id && { category_id }),
+//     // ...(safeSort === 'distancae' && { lat, lng }),
+//     page,
+//     size,
+//     // sort: safeSort,
+//   };
+
+//   const res = await instance.get('/api/v1/search/stores', {
+//     params,
+//     paramsSerializer: (p) =>
+//       qs.stringify(p, { arrayFormat: 'repeat', encode: true }),
+//   });
+//   // 백 응답이 { result: { items: [...] } } 또는 { items: [...] } 둘 다 커버
+//   const data = res?.data;
+//   return {
+//     items: data?.result?.items ?? data?.items ?? [],
+//     pageInfo: data?.result?.pageInfo ?? data?.pageInfo ?? null,
+//   };
+// };
 
 export const getStoreById = async (id) => {
   try {
