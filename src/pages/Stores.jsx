@@ -24,17 +24,17 @@ const sortValue = (label) => (label === '별점순' ? 'rating' : 'distance');
 const pad = (n) => String(n).padStart(2, '0');
 
 // '07:00-08:00' -> '07-08시'
-const timeToChip = (t) => {
-  if (!t) return '';
-  const [s, e] = t.split('-');
+const slotToChip = (slot) => {
+  if (!slot) return '';
+  const [s, e] = slot.split('-');
   return `${s.slice(0, 2)}-${e.slice(0, 2)}시`;
 };
 
-// '07-08시' / '7-8시' -> '07:00-08:00'
-const chipToTime = (label) => {
-  const m = label.match(/(\d{1,2})\s*-\s*(\d{1,2})/);
-  if (!m) return '';
-  return `${pad(m[1])}:00-${pad(m[2])}:00`;
+// 현재 URL의 time(start형식 'HH:mm')을 가지고 timeSlots에서 매칭되는 풀 슬롯을 찾아서 칩 라벨로
+const startToChip = (start, slots) => {
+  if (!start) return '';
+  const found = slots.find((s) => s.startsWith(start));
+  return found ? slotToChip(found) : '';
 };
 
 const iconMap = {
@@ -52,7 +52,7 @@ const Stores = () => {
 
   const { data: meta } = useStoresMeta();
   const categories = meta?.categories ?? [];
-  const timeOptions = meta?.time_slots ?? [];
+  const timeSlots = meta?.timeSlots ?? [];
 
   const KOR_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
   const todayKorDay = KOR_DAYS[new Date().getDay()]; // 기본값
@@ -77,9 +77,12 @@ const Stores = () => {
 
   const useMenuMode = !!filters.q;
 
+  const selectedFullSlot =
+    (filters.time && timeSlots.find((s) => s.startsWith(filters.time))) || '';
+
   useEffect(() => {
-    console.log('[timeOptions]', timeOptions);
-  }, [timeOptions]);
+    console.log('[timeSlots]', timeSlots);
+  }, [timeSlots]);
 
   // 쓰는 키에 맞춰서 (예: name 또는 q)
   const value =
@@ -152,15 +155,7 @@ const Stores = () => {
     : (menuStores?.items ?? []);
   const storeList = plainData?.result?.items ?? plainData?.items ?? [];
 
-  // 메뉴 결과 우선, 없으면 매장 결과로 폴백
-  // const items = useMenuMode
-  //   ? menuList.length > 0
-  //     ? menuList
-  //     : storeList
-  //   : storeList;
-
   const items = useMenuMode ? menuList : storeList;
-
   const isLoading = useMenuMode ? loadingMenu : loadingPlain;
   const isError = useMenuMode ? errorMenu : errorPlain;
 
@@ -187,7 +182,7 @@ const Stores = () => {
           selectedCategory={filters.category}
           selectedDay={filters.day} // ★ 추가
         />
-        <div className="flex justify-between mb-[6px]">
+        <div className="flex justify-around mb-[6px]">
           {categories.map((cat) => {
             const selected = selectedCatId === cat.id;
             return (
@@ -195,7 +190,7 @@ const Stores = () => {
                 key={cat.id}
                 iconOnly={true}
                 isrc={iconMap[cat.id]}
-                design="h-[35px] w-full pt-[0] p-2"
+                design="h-[37px] w-full pt-[0] mr-[10px] p-4 mt-4 mx-2"
                 selected={selected}
                 dimInactive={dimOthers}
                 onClick={() =>
@@ -231,12 +226,19 @@ const Stores = () => {
 
           <div className="flex gap-[6px]">
             <DropdownTime
-              options={timeOptions}
+              options={timeSlots}
               placeholder={
-                filters.time ? timeToChip(filters.time) : '오픈시간 선택'
+                filters.time
+                  ? startToChip(filters.time, timeSlots)
+                  : '오픈시간 선택'
               }
-              value={filters.time}
-              onChange={(t) => upsertParams({ time: t })}
+              value={selectedFullSlot}
+              onChange={(slot) => {
+                // slot은 "HH:mm-HH:mm"
+                const [start] = slot.split('-'); // "HH:mm"
+                // URL에는 시작시각만 저장
+                upsertParams({ time: start, page: 1 });
+              }}
               design=" rounded-[20px] h-min py-0"
               font="medium"
               rounded="[20px]"
