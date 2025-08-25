@@ -15,7 +15,7 @@ export const login = async (code) => {
 
 export const getCurrentUser = async () => {
   try {
-    const { data } = await instance.get('/api/user/me');
+    const { data } = await instance.get('/api/users/1/profile');
     return data?.result ?? null;
   } catch (e) {
     console.error('[getCurrentUser] API 요청 실패:', e);

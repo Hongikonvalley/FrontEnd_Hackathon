@@ -7,8 +7,11 @@ import FilterButton from '../components/FilterButton';
 import Header from '../components/Header';
 import DropdownTime from '../components/DropdownTime';
 import { Link } from 'react-router-dom';
+import { getCurrentUser } from '../apis/auth';
 
 const Main = () => {
+  const testUserId = 'mutsa@mutsa.shop';
+
   const navigate = useNavigate();
   const [selectedTime, setSelectedTime] = useState(null);
   const [selectedSale, setSelectedSale] = useState(false);
@@ -53,6 +56,12 @@ const Main = () => {
     queryFn: getMorningSaleStores,
   });
 
+  const { data: user, isLoading: isUserLoading } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: getCurrentUser,
+    enabled: !!testUserId, // getUserProfile로 변경
+  });
+
   return (
     <>
       <Header title="main" showBack={false} />
@@ -62,7 +71,7 @@ const Main = () => {
         {/* search bar div */}
         <div className="bg-primary rounded-[20px] mx-[30px] my-[16px] p-[22px] flex flex-col">
           <div className="font-bold text-[20px]">
-            <p>윤서님,</p>
+            <p className="text-2xl font-bold">{user?.nickname}님,</p>
             <p>좋은 아침이에요</p>
             <p>오늘은 어디에서 시작할까요?</p>
           </div>
