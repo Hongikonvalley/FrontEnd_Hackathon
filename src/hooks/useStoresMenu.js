@@ -1,111 +1,107 @@
-// import { useQuery } from '@tanstack/react-query';
-// import { getStoreMenus, getStoreMenuCategoriesMeta } from '../apis/stores';
-
-// export const useStoresMenus = (params) =>
-//   useQuery({
-//     queryKey: ['storeMenus', params],
-//     queryFn: () => getStoreMenus(params),
-//     keepPreviousData: true,
-//     staleTime: 30_000,
-//   });
-
-// export const useStoresMenuCategoriesMeta = (storeId) =>
-//   useQuery({
-//     queryKey: ['storeMenuCats', storeId],
-//     queryFn: () => getStoreMenuCategoriesMeta(storeId),
-//     enabled: !!storeId,
-//     staleTime: 5 * 60_000,
-//   });
-
 import { useQuery } from '@tanstack/react-query';
-import { getStoresFiltered } from '../apis/stores';
-import { hasMenuForStore } from '../apis/menus';
+import { getStoresFiltered, getStoreById } from '../apis/stores';
 
-/** 간단한 동시성 제한 실행기 */
-const runWithLimit = async (limit, tasks) => {
-  const results = new Array(tasks.length);
-  let idx = 0,
-    running = 0;
-  return new Promise((resolve, reject) => {
-    const runNext = () => {
-      if (idx >= tasks.length && running === 0) return resolve(results);
-      while (running < limit && idx < tasks.length) {
-        const cur = idx++;
-        running++;
-        tasks[cur]()
-          .then((r) => {
-            results[cur] = r;
-          })
-          .catch((e) => {
-            results[cur] = e;
-          })
-          .finally(() => {
-            running--;
-            runNext();
-          });
-      }
-    };
-    runNext();
-  });
-};
-
-export const useStoresByMenuKeyword = ({
-  q, // 메뉴 키워드
-  time,
-  dayOfWeek,
-  sale,
-  category,
-  page = 1,
-  size = 20,
-  sort = 'distance',
-  availableOnly = true, // 메뉴 판매중만 고려할지
-  candidateFromName = true, // 후보 뽑을 때 매장명 q도 같이 쓸지
-}) => {
+export function useStoresByMenuKeyword(
+  {
+    q = '',
+    time,
+    dayofweek,
+    sale,
+    category_id,
+    page = 1,
+    size = 20,
+    sort = 'rating',
+    limit = 6, // 매칭된 메뉴 미리보기 개수
+    concurrency = 5, // 동시 상세조회 제한(과도한 호출 방지)
+  } = {},
+  options = {}
+) {
   return useQuery({
     queryKey: [
-      'storesByMenu',
-      {
+      'stores-by-menu',
+      { q, time, dayofweek, sale, category_id, page, size, sort },
+    ],
+    enabled: !!q, // 키워드 없으면 실행 안 함
+    queryFn: async () => {
+      const keyword = String(q).trim().toLowerCase();
+      if (!keyword) return [];
+
+      // 1) 후보 매장 목록: q는 제외(페이지 단위로)
+      const listResp = await getStoresFiltered({
         q,
         time,
-        dayOfWeek,
+        dayofweek,
         sale,
-        category,
+        category_id,
         page,
         size,
         sort,
-        availableOnly,
-        candidateFromName,
-      },
-    ],
-    enabled: true,
-    keepPreviousData: true,
-    staleTime: 30_000,
-    queryFn: async () => {
-      // 1) 후보 매장 불러오기
-      const candidateFilters = {
-        q: candidateFromName ? q : undefined, // 매장명으로도 줄이고 싶으면 true
-        time,
-        dayOfWeek,
-        sale,
-        category,
-        page,
-        size,
-        sort,
-      };
-      const base = await getStoresFiltered(candidateFilters);
-      const items = base?.result?.items ?? base?.items ?? [];
-
-      if (!q) return items; // 메뉴 키워드 없으면 후보 그대로
-
-      // 2) 각 매장에 대해 메뉴 존재여부 병렬 검사(동시 4개)
-      const tasks = items.map((s) => {
-        const storeId = s.id ?? s.store_id;
-        return () => hasMenuForStore({ storeId, q, available: availableOnly });
       });
-      const checks = await runWithLimit(4, tasks);
 
-      // 3) 메뉴가 존재하는 매장만 반환
-      return items.filter((_, i) => checks[i] === true);
+      const rawItems =
+        listResp?.items ??
+        listResp?.result?.items ??
+        (Array.isArray(listResp) ? listResp : []);
+
+      const stores = Array.isArray(rawItems) ? rawItems : [];
+      const results = [];
+
+      // 동시 호출 제한 유틸
+      const pool = [];
+      const runWithLimit = async (fn) => {
+        while (pool.length >= concurrency) {
+          await Promise.race(pool);
+        }
+        const p = fn().finally(() => {
+          const i = pool.indexOf(p);
+          if (i >= 0) pool.splice(i, 1);
+        });
+        pool.push(p);
+        return p;
+      };
+
+      await Promise.all(
+        stores.map((s) =>
+          runWithLimit(async () => {
+            const storeId = s.id ?? s.store_id ?? s.storeId;
+            if (!storeId) return;
+
+            try {
+              const detail = await getStoreById(storeId);
+              const menus =
+                (Array.isArray(detail?.menus) && detail.menus) ||
+                (Array.isArray(detail?.result?.menus) && detail.result.menus) ||
+                [];
+
+              const matched = menus.filter((m) => {
+                if (!m) return false;
+                const avail =
+                  m.available ?? m.is_available ?? m.onSale ?? m.active;
+                // 메뉴명/설명 키워드 매칭
+                const name = String(m.name ?? '').toLowerCase();
+                const desc = String(
+                  m.description ?? m.desc ?? ''
+                ).toLowerCase();
+                return name.includes(keyword) || desc.includes(keyword);
+              });
+
+              if (matched.length > 0) {
+                results.push({
+                  ...s,
+                  matchedMenus: matched.slice(0, limit),
+                });
+              }
+            } catch (e) {
+              // 실패는 무시
+            }
+          })
+        )
+      );
+
+      return results;
     },
+    staleTime: 30_000,
+    keepPreviousData: true,
+    ...options,
   });
-};
+}

@@ -43,34 +43,74 @@ export const fetchAllStores = async () => {
 };
 
 const slotToStartTime = (slot) => (slot ? slot.split('-')[0] : '');
+const DAY_KR_TO_EN = {
+  일: 6,
+  월: 0,
+  화: 1,
+  수: 2,
+  목: 3,
+  금: 4,
+  토: 5,
+};
+
 export const getStoresFiltered = async ({
   name,
   time, // '06:00-07:00' (UI 값)
-  dayOfWeek, // '월' | '화' | ... | ''  (UI 값)
+  dayofweek, // '월' | '화' | ... | ''  (UI 값)
   sale,
-  category,
+  category_id,
   page = 1,
   size = 20,
-  sort = 'distance',
+  // sort = 'distance',
 } = {}) => {
+  const timeStart = slotToStartTime(time);
+  const day_en = dayofweek ? DAY_KR_TO_EN[dayofweek] : undefined;
+  // const safeSort =
+  //   sort === 'distance' && (lat == null || lng == null) ? 'rating' : sort;
+
   const params = {
     ...(name && { name }),
-    ...(time && { time: slotToStartTime(time) }), // ★ 서버는 HH:mm만 받음
-    ...(dayOfWeek && { day_of_week: dayOfWeek }), // ★ 요일 파라미터
+    ...(timeStart && { time: slotToStartTime(time) }), // ★ 서버는 HH:mm만 받음
+    ...(dayofweek && { day_of_week: day_en }), // ★ 요일 파라미터
     ...(sale === true && { sale: 1 }),
-    ...(category && { category }),
+    ...(category_id && { category_id }),
+    // ...(safeSort === 'distancae' && { lat, lng }),
     page,
     size,
-    sort,
+    // sort: safeSort,
   };
 
-  const res = await axiosInstance.get('/api/v1/search/stores', {
+  const res = await instance.get('/api/v1/search/stores', {
     params,
     paramsSerializer: (p) =>
       qs.stringify(p, { arrayFormat: 'repeat', encode: true }),
   });
+  // 백 응답이 { result: { items: [...] } } 또는 { items: [...] } 둘 다 커버
+  const data = res?.data;
+  return {
+    items: data?.result?.items ?? data?.items ?? [],
+    pageInfo: data?.result?.pageInfo ?? data?.pageInfo ?? null,
+  };
+};
 
-  return res.data; // { items, pageInfo } 가정
+// 매장별 메뉴 검색 (존재 여부만 확인용, size=1)
+export const searchMenusInStore = async (
+  storeId,
+  { q, availableOnly = true }
+) => {
+  const res = await instance.get(`/api/v1/stores/${storeId}/menus`, {
+    params: {
+      q,
+      ...(availableOnly ? { available: true } : {}),
+      size: 1, // 존재 여부만 알면 되니까 1
+      page: 0,
+    },
+  });
+  const data = res?.data?.data ?? res?.data?.result ?? res?.data;
+  // 표준화: 총 개수/첫 페이지 content 존재 여부를 체크
+  const content = data?.content ?? [];
+  const total = data?.total_elements ?? data?.totalElements ?? content.length;
+  return total > 0 || content.length > 0;
 };
 
 export const getStoreById = async (id) => {
@@ -133,41 +173,210 @@ export const getStoresMeta = async () => {
 };
 
 // 메뉴
-export const getStoreMenus = async ({
-  storeId,
-  category, // '음료' | '디저트' ...
-  available, // true | false
-  q, // 메뉴 키워드
-  sort = 'name,asc', // name,asc|name,desc|price,asc|price,desc|createdAt,desc
-  page = 0,
+export async function getStoreMenus({
+  q = '',
+  time,
+  dayofweek,
+  sale,
+  category_id,
+  page = 1,
   size = 20,
-}) => {
-  const params = {
-    ...(category && { category }),
-    ...(typeof available === 'boolean' && { available }),
-    ...(q && { q }),
+  sort = 'rating',
+  menuAvailable,
+  limit = 6,
+  concurrency = 5,
+} = {}) {
+  const keyword = String(q).trim().toLowerCase();
+
+  const listResp = await getStoresFiltered({
+    name: '',
+    time,
+    dayofweek,
+    sale,
+    category_id,
+    page,
+    size,
     sort,
+  });
+
+  const items =
+    listResp?.items ??
+    listResp?.result?.items ??
+    (Array.isArray(listResp) ? listResp : []);
+  const stores = Array.isArray(items) ? items : [];
+
+  const results = [];
+  const pool = [];
+
+  const runWithLimit = async (fn) => {
+    while (pool.length >= concurrency) {
+      await Promise.race(pool);
+    }
+    const p = fn().finally(() => {
+      const i = pool.indexOf(p);
+      if (i >= 0) pool.splice(i, 1);
+    });
+    pool.push(p);
+    return p;
+  };
+
+  await Promise.all(
+    stores.map((s) =>
+      runWithLimit(async () => {
+        const storeId = s.id ?? s.store_id ?? s.storeId;
+        if (!storeId) return;
+
+        try {
+          const detail = await getStoreDetail(storeId);
+          const menus =
+            (Array.isArray(detail?.menus) && detail.menus) ||
+            (Array.isArray(detail?.result?.menus) && detail.result.menus) ||
+            [];
+
+          const matched = menus.filter((m) => {
+            if (!m) return false;
+
+            if (typeof menuAvailable === 'boolean') {
+              const avail =
+                m.available ?? m.is_available ?? m.onSale ?? m.active;
+              if (Boolean(avail) !== menuAvailable) return false;
+            }
+
+            if (keyword) {
+              const name = String(m.name ?? '').toLowerCase();
+              const desc = String(m.description ?? m.desc ?? '').toLowerCase();
+              if (!name.includes(keyword) && !desc.includes(keyword)) {
+                return false;
+              }
+            }
+
+            return true;
+          });
+
+          if (matched.length > 0) {
+            results.push({
+              ...s,
+              matchedMenus: matched.slice(0, limit),
+            });
+          }
+        } catch (e) {
+          // 실패는 무시
+        }
+      })
+    )
+  );
+
+  // ✅ 이 return은 반드시 함수 안에!
+  return {
+    items: results,
+    count: results.length,
     page,
     size,
   };
+}
 
-  const res = await instance.get(`/api/v1/stores/${storeId}/menus`, {
-    params,
-    paramsSerializer: (p) =>
-      qs.stringify(p, { arrayFormat: 'repeat', encode: true }),
-  });
+// export const getStoreMenus = async ({
+//   storeId,
+//   category, // '음료' | '디저트' ... 혹은 카테고리 id
+//   available, // true | false
+//   q, // 메뉴 키워드
+//   sort = 'name,asc', // name,asc|name,desc|price,asc|price,desc|createdAt,desc
+//   page = 0, // 0-based
+//   size = 20,
+// }) => {
+//   // 1) 상세조회 (menus 포함)
+//   const res = await instance.get(`/api/v1/search/stores`);
+//   const root = res?.data ?? {};
+//   const menus = root?.result?.menus ?? root?.menus ?? [];
 
-  // 응답 스펙: data.data.content ...
-  const d = res?.data?.data ?? {};
-  return {
-    items: d.content ?? [],
-    page: d.page ?? 0,
-    size: d.size ?? size,
-    total: d.total_elements ?? 0,
-    totalPages: d.total_pages ?? 0,
-    sortedBy: d.sorted_by ?? sort,
-  };
-};
+//   // 안전장치
+//   const list = Array.isArray(menus) ? menus : [];
+
+//   // 2) 필터링
+//   const term = (q ?? '').trim().toLowerCase();
+//   let filtered = list.filter((m) => {
+//     if (!m) return false;
+
+//     // 카테고리 매칭: 문자열(한글명) 또는 id 둘 다 대비
+//     if (category) {
+//       const mc = m.category ?? m.menuCategory ?? m.category_id ?? m.categoryId;
+//       const matchById = String(mc?.id ?? mc) === String(category);
+//       const matchByName = String(mc?.name ?? mc) === String(category);
+//       if (!matchById && !matchByName) return false;
+//     }
+
+//     // 판매여부 매칭
+//     if (typeof available === 'boolean') {
+//       const av = Boolean(m.available ?? m.is_available ?? m.onSale ?? m.active);
+//       if (av !== available) return false;
+//     }
+
+//     // 키워드 매칭: name/desc에 부분일치(대소문자 무시)
+//     if (term) {
+//       const name = String(m.name ?? '').toLowerCase();
+//       const desc = String(m.description ?? m.desc ?? '').toLowerCase();
+//       if (!name.includes(term) && !desc.includes(term)) return false;
+//     }
+
+//     return true;
+//   });
+
+//   // 3) 정렬
+//   const parseSort = (s) => {
+//     const [kRaw = 'name', dRaw = 'asc'] = String(s).split(',');
+//     const key = kRaw.trim();
+//     const dir = dRaw.trim().toLowerCase() === 'desc' ? -1 : 1;
+//     return { key, dir };
+//   };
+
+//   const { key, dir } = parseSort(sort);
+
+//   const getKeyVal = (m, k) => {
+//     switch (k) {
+//       case 'name':
+//         return String(m.name ?? '');
+//       case 'price':
+//         return Number(m.price ?? m.sale_price ?? m.base_price ?? 0);
+//       case 'createdAt':
+//         return new Date(
+//           m.createdAt ?? m.created_at ?? m.created ?? 0
+//         ).getTime();
+//       default:
+//         return String(m[k] ?? '');
+//     }
+//   };
+
+//   filtered.sort((a, b) => {
+//     const va = getKeyVal(a, key);
+//     const vb = getKeyVal(b, key);
+
+//     // 문자열 vs 숫자 정렬 처리
+//     if (typeof va === 'number' && typeof vb === 'number') {
+//       return (va - vb) * dir;
+//     }
+//     if (typeof va === 'string' && typeof vb === 'string') {
+//       return va.localeCompare(vb, 'ko') * dir;
+//     }
+//     // 타입 섞이면 숫자 우선
+//     return String(va).localeCompare(String(vb), 'ko') * dir;
+//   });
+
+//   // 4) 페이지네이션 (0-based page)
+//   const total = filtered.length;
+//   const start = page * size;
+//   const end = start + size;
+//   const items = filtered.slice(start, end);
+
+//   return {
+//     items,
+//     page,
+//     size,
+//     total,
+//     totalPages: Math.max(1, Math.ceil(total / size)),
+//     // 필요하면 원본도 함께
+//     // all: filtered,
+//   };
+// };
 
 /**
  * 매장 내 메뉴 카테고리 메타
