@@ -119,7 +119,6 @@ export const getFavoriteStores = async () => {
   }
 };
 
-
 // 메타
 export const getStoresMeta = async () => {
   const res = await instance.get('/api/v1/search/filters'); // 실제 경로 확인!
@@ -179,7 +178,8 @@ export const getStoreMenuCategoriesMeta = async (storeId) => {
     `/api/v1/stores/${storeId}/menus/meta/categories`
   );
   return res?.data?.data ?? []; // [{category:'음료', count:12}, ...]
-=======
+};
+
 export const getPopularStore = async () => {
   try {
     const { data } = await instance.get('/api/v1/stores/popular/today');
