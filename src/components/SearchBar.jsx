@@ -18,10 +18,10 @@ const SearchBar = ({
   const handleSearch = () => {
     const params = new URLSearchParams();
 
-    if (query.trim()) params.append('name', query.trim());
+    if (query.trim()) params.set('q', query.trim());
     if (selectedTime) params.append('time', selectedTime);
     if (selectedSale) params.append('sale', selectedSale);
-    if (selectedCategory) params.set('category', selectedCategory);
+    if (selectedCategory) params.set('category_id', selectedCategory);
     if (selectedDay) params.set('day', selectedDay); // ★ 요일 유지
 
     navigate(`/stores?${params.toString()}`);

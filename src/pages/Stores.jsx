@@ -16,6 +16,7 @@ import SearchBar from '../components/SearchBar';
 import DropdownTime from '../components/DropdownTime';
 import DropdownSort from '../components/DropdownSort';
 import FilterButton from '../components/FilterButton';
+import { dayToIndex } from '../utils/dayToIndex';
 
 const sortLabel = (s) => (s === 'rating' ? '별점순' : '거리순');
 const sortValue = (label) => (label === '별점순' ? 'rating' : 'distance');
@@ -36,15 +37,33 @@ const chipToTime = (label) => {
   return `${pad(m[1])}:00-${pad(m[2])}:00`;
 };
 
+const iconMap = {
+  cafe: '/Coffee.svg',
+  bakery: '/Bakery.svg',
+  salad: '/Salad.svg',
+  brunch: '/Brunch.svg',
+};
+
+// const typeSlots = [
+//   { code: 'Coffee', label: '카페', icon: './Coffee.svg' },
+//   { code: 'Bakery', label: '베이커리', icon: './Bakery.svg' },
+//   { code: 'Salad', label: '샐러드', icon: './Salad.svg' },
+//   { code: 'Brunch', label: '브런치', icon: './Brunch.svg' },
+// ];
+
 const Stores = () => {
   const { setShowNavBar } = useOutletContext();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedTime, setSelectedTime] = useState('');
+
   const { data: meta } = useStoresMeta();
+  const categories = meta?.categories ?? [];
   const timeOptions = meta?.time_slots ?? [];
+
   const KOR_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
   const todayKorDay = KOR_DAYS[new Date().getDay()]; // 기본값
+  const hasCoords = false;
 
   // URL -> 필터
   const filters = useMemo(() => {
@@ -53,27 +72,28 @@ const Stores = () => {
     const KOR_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
     const today = KOR_DAYS[new Date().getDay()];
     return {
-      q: (searchParams.get('q') ?? searchParams.get('name') ?? '').trim(), // ← 검색어 통합
+      q: (searchParams.get('q') ?? '').trim(), // ← 검색어 통합
       time: searchParams.get('time') ?? '',
       day: searchParams.get('day') ?? today,
       sale,
-      category: (searchParams.get('category') ?? '').trim(),
-      sort: searchParams.get('sort') ?? 'distance',
+      category: (searchParams.get('category_id') ?? '').trim(),
+      sort: searchParams.get('sort') ?? (hasCoords ? 'distance' : 'rating'),
       page: Number(searchParams.get('page') ?? '1'),
     };
   }, [searchParams]);
 
-  const useMenuMode = !!filters.q;
+  const useMenuMode = false;
 
   useEffect(() => {
     console.log('[timeOptions]', timeOptions);
   }, [timeOptions]);
 
   // 쓰는 키에 맞춰서 (예: name 또는 q)
-  const raw = searchParams.get('name') ?? searchParams.get('q') ?? '';
-
-  // +를 공백으로 보이게 하고 싶으면
-  const value = raw.replace(/\+/g, ' ');
+  const value =
+    searchParams.get('name') ??
+    searchParams.get('category_id') ??
+    searchParams.get('q') ??
+    '';
 
   // const [options, setOptions] = useState('');
 
@@ -96,14 +116,14 @@ const Stores = () => {
     isLoading: loadingMenu,
     isError: errorMenu,
   } = useStoresByMenuKeyword({
-    q: filters.q,
+    name: filters.q,
     time: filters.time,
-    dayOfWeek: filters.day,
+    dayofweek: dayToIndex(filters.day),
     sale: filters.sale,
-    category: filters.category,
+    category_id: filters.category,
     page: filters.page,
     size: 20,
-    sort: filters.sort,
+    // sort: filters.sort,
     availableOnly: true,
     candidateFromName: true,
   });
@@ -116,32 +136,46 @@ const Stores = () => {
     isError: errorPlain,
   } = useFilteredStores(
     {
-      q: undefined,
-      name: '', // ← 매장명으로는 검색 안 함
+      q: filters.q, // ← 매장명으로는 검색 안 함
       time: filters.time,
-      dayOfWeek: filters.day,
+      dayofweek: dayToIndex(filters.day),
       sale: filters.sale,
-      category: filters.category,
+      category_id: filters.category,
       page: filters.page,
       size: 20,
       sort: filters.sort,
     },
-    { enabled: !useMenuMode }
+    { enabled: true }
   ); // 훅이 옵션 객체 받으면 enabled 전달
 
-  // ✅ 최종 표시 데이터
-  const items = useMenuMode
-    ? (menuStores ?? [])
-    : (plainData?.result?.items ?? plainData?.items ?? []);
+  // const rawItems = useMenuMode
+  //   ? Array.isArray(menuStores)
+  //     ? menuStores
+  //     : (menuStores?.items ?? [])
+  //   : (plainData?.result?.items ?? plainData?.items ?? []);
 
-  const isLoading = useMenuMode ? loadingMenu : loadingPlain;
-  const isError = useMenuMode ? errorMenu : errorPlain;
+  // const keyword = (filters.q || '').toLowerCase().trim();
+  // const items = keyword
+  //   ? rawItems.filter((s) => {
+  //       const name = (s.store_name ?? s.name ?? '').toString().toLowerCase();
+  //       return name.includes(keyword);
+  //     })
+  //   : rawItems;
+
+  // const isLoading = useMenuMode ? loadingMenu : loadingPlain;
+  // const isError = useMenuMode ? errorMenu : errorPlain;
+
+  const selectedCatId = filters.category;
+  const dimOthers = !!selectedCatId;
+  const items = plainData?.result?.items ?? plainData?.items ?? [];
+  const isLoading = loadingPlain;
+  const isError = errorPlain;
 
   // // ★ 데이터 패칭
   // const { data, isLoading } = useFilteredStores({
   //   name: filters.name,
   //   time: filters.time, // "06:00-07:00" -> API에서 "06:00"으로 변환됨
-  //   dayOfWeek: filters.day, // ★ 요일 전달
+  //   dayofweek: filters.day, // ★ 요일 전달
   //   sale: filters.sale,
   //   category: filters.category,
   //   page: filters.page,
@@ -159,6 +193,14 @@ const Stores = () => {
 
   const handleSortChange = (label) => upsertParams({ sort: sortValue(label) });
 
+  // console.log('meta:', meta);
+  // console.log('categories:', categories);
+  // console.log(
+  //   'category ids:',
+  //   categories.map((c) => c.id)
+  // );
+  // console.log(filters.category);
+
   return (
     <>
       <Header showBack={true} />
@@ -174,6 +216,25 @@ const Stores = () => {
           selectedCategory={filters.category}
           selectedDay={filters.day} // ★ 추가
         />
+        <div className="flex justify-between mb-[6px]">
+          {categories.map((cat) => {
+            const selected = selectedCatId === cat.id;
+            return (
+              <FilterButton
+                key={cat.id}
+                iconOnly={true}
+                isrc={iconMap[cat.id]}
+                design="h-[35px] w-full pt-[0] p-2"
+                selected={selected}
+                dimInactive={dimOthers}
+                onClick={() =>
+                  upsertParams({ category_id: selected ? '' : cat.id, page: 1 })
+                }
+              />
+            );
+          })}
+        </div>
+
         <div className="flex flex-row justify-between items-start mt-[12px]">
           <div className="mb-0 flex flex-row gap-[8px]">
             <FilterButton
@@ -200,7 +261,9 @@ const Stores = () => {
           <div className="flex gap-[6px]">
             <DropdownTime
               options={timeOptions}
-              placeholder={filters.time ? timeToChip(filters.time) : ''}
+              placeholder={
+                filters.time ? timeToChip(filters.time) : '오픈시간 선택'
+              }
               value={filters.time}
               onChange={(t) => upsertParams({ time: t })}
               design=" rounded-[20px] h-min py-0"
