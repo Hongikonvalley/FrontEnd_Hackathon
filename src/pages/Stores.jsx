@@ -153,11 +153,13 @@ const Stores = () => {
   const storeList = plainData?.result?.items ?? plainData?.items ?? [];
 
   // 메뉴 결과 우선, 없으면 매장 결과로 폴백
-  const items = useMenuMode
-    ? menuList.length > 0
-      ? menuList
-      : storeList
-    : storeList;
+  // const items = useMenuMode
+  //   ? menuList.length > 0
+  //     ? menuList
+  //     : storeList
+  //   : storeList;
+
+  const items = useMenuMode ? menuList : storeList;
 
   const isLoading = useMenuMode ? loadingMenu : loadingPlain;
   const isError = useMenuMode ? errorMenu : errorPlain;
