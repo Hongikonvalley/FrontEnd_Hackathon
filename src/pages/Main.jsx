@@ -8,8 +8,10 @@ import Header from '../components/Header';
 import DropdownTime from '../components/DropdownTime';
 import { Link } from 'react-router-dom';
 import { useStoresMeta } from '../hooks/useStoresMeta';
+import { getCurrentUser } from '../apis/auth';
 
 const Main = () => {
+  const testUserId = 'mutsa@mutsa.shop';
   const navigate = useNavigate();
   const [selectedTime, setSelectedTime] = useState(null);
   const [selectedSale, setSelectedSale] = useState(false);
@@ -31,6 +33,12 @@ const Main = () => {
 
   const { data: meta } = useStoresMeta();
   const timeSlots = meta?.timeSlots ?? []; // ["06:00-07:00", "07:00-08:00", ...]
+
+  const { data: user, isLoading: isUserLoading } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: getCurrentUser,
+    enabled: !!testUserId, // getUserProfile로 변경
+  });
 
   // ✅ 드롭다운에서 풀 슬롯이 내려오면 start만 저장
   const handleTimeChange = (slot /* "HH:mm-HH:mm" */) => {
@@ -72,7 +80,7 @@ const Main = () => {
         {/* search bar div */}
         <div className="bg-primary rounded-[20px] mx-[30px] my-[16px] p-[22px] flex flex-col">
           <div className="font-bold text-[20px]">
-            <p>윤서님,</p>
+            <p className="text-2xl font-bold">{user?.nickname}님,</p>
             <p>좋은 아침이에요</p>
             <p>오늘은 어디에서 시작할까요?</p>
           </div>
