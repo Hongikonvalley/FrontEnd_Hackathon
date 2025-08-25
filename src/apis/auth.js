@@ -14,8 +14,13 @@ export const login = async (code) => {
 };
 
 export const getCurrentUser = async () => {
-  const res = await instance.get('/api/v1/auth/me');
-  return res.data;
+  try {
+    const { data } = await instance.get('/api/user/me');
+    return data?.result ?? null;
+  } catch (e) {
+    console.error('[getCurrentUser] API 요청 실패:', e);
+    return null;
+  }
 };
 
 export const signIn = async (username, password) => {

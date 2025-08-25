@@ -18,6 +18,7 @@ import Setting_Chatting from './pages/Setting_Chatting.jsx';
 import Setting_Instagram from './pages/Setting_Instagram.jsx';
 import Setting_MyReviews from './pages/Setting_MyReviews.jsx';
 import Setting_Profile from './pages/Setting_Profile.jsx';
+import Exchange from './pages/Exchange.jsx';
 //import StoreDetail_mock from './pages/StoreDetail_mock.jsx';
 import Stores_mock from './pages/Stores_mock.jsx';
 import './index.css';
@@ -49,6 +50,7 @@ function App() {
           <Route path="/setting_myreviews" element={<Setting_MyReviews />} />
           <Route path="/setting_profile" element={<Setting_Profile />} />
           <Route path="/hot_sale" element={<Hot />} />
+          <Route path="/exchange" element={<Exchange />} />
           {/* <Route path="/store/:id/mock" element={<StoreDetail_mock />} /> */}
         </Route>
       </Routes>

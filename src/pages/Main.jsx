@@ -43,10 +43,6 @@ const Main = () => {
     navigate({ pathname: '/stores', search: `?${createSearchParams(params)}` });
   };
 
-  const goToMockStores = () => {
-    navigate('/stores_mock');
-  };
-
   const { data: popularStore, isLoading } = useQuery({
     queryKey: ['popularStore'],
     queryFn: getPopularStore,

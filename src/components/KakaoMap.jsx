@@ -4,8 +4,8 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 const KakaoMap = ({ lat, lng, name }) => {
-  // 1. name을 props로 받습니다.
   useEffect(() => {
+    // window.kakao 객체가 로드되었는지 확인 후 지도 생성
     if (window.kakao && window.kakao.maps) {
       const container = document.getElementById('map');
       const options = {
@@ -20,20 +20,15 @@ const KakaoMap = ({ lat, lng, name }) => {
       });
       marker.setMap(map);
 
-      // 2. 커스텀 오버레이에 표시할 내용(HTML)을 정의합니다.
       const content = `<div style="padding:5px; background:white; border:1px solid black; border-radius: 8px; font-size:12px; font-weight:bold;">${name}</div>`;
-
-      // 3. 커스텀 오버레이를 생성합니다.
       const customOverlay = new window.kakao.maps.CustomOverlay({
         position: markerPosition,
         content: content,
-        yAnchor: 2.2, // 마커 위에 오버레이가 오도록 y축 위치를 조정합니다.
+        yAnchor: 2.2,
       });
-
-      // 4. 커스텀 오버레이를 지도에 표시합니다.
       customOverlay.setMap(map);
     }
-  }, [lat, lng, name]); // name이 변경될 때도 다시 그리도록 의존성에 추가
+  }, [lat, lng, name]);
 
   return (
     <div
@@ -49,7 +44,7 @@ const KakaoMap = ({ lat, lng, name }) => {
 KakaoMap.propTypes = {
   lat: PropTypes.number.isRequired,
   lng: PropTypes.number.isRequired,
-  name: PropTypes.string.isRequired, // name prop에 대한 유효성 검사 추가
+  name: PropTypes.string.isRequired,
 };
 
 export default KakaoMap;

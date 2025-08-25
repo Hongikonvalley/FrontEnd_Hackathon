@@ -3,9 +3,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query'; // 1. useQuery import
-import { getUserPoints } from '../apis/auth';
+import { getUserPoints, getCurrentUser } from '../apis/auth'; // getCurrentUser import
 import { FaChevronRight } from 'react-icons/fa';
 import Header from '../components/Header.jsx';
+import { useNavigate } from 'react-router-dom';
 
 // 메뉴 아이템을 위한 재사용 가능한 컴포넌트
 const MenuItem = ({ to, children, iconSrc }) => (
@@ -23,12 +24,23 @@ const MenuItem = ({ to, children, iconSrc }) => (
 
 const MyPage = () => {
   const testUserId = 'mutsa@mutsa.shop';
+  const navigate = useNavigate();
+
+  const { data: user, isLoading: isUserLoading } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: getCurrentUser,
+    enabled: !!testUserId, // getUserProfile로 변경
+  });
 
   const { data: pointData, isLoading: isPointLoading } = useQuery({
     queryKey: ['userPoints', testUserId], // queryKey에도 고정된 ID를 사용
     queryFn: () => getUserPoints(testUserId),
     enabled: !!testUserId, // 항상 실행되도록 보장
   });
+
+  const goToExchange = () => {
+    navigate('/exchange');
+  };
 
   // 4. 로딩 및 에러 상태를 처리합니다.
   if (isPointLoading)
@@ -42,12 +54,14 @@ const MyPage = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
             <img
-              src="/Profile.png" // 임시 프로필 이미지
+              // 2. API로 받은 프로필 이미지 표시 (null일 경우 기본 이미지)
+              src={user?.profile_image || '/Profile.png'}
               alt="Profile"
               className="w-16 h-16 rounded-full object-cover border-2 border-primary"
             />
             <div>
-              <p className="text-2xl font-bold">잉뉴</p>
+              {/* 3. API로 받은 닉네임 표시 */}
+              <p className="text-2xl font-bold">{user?.nickname}</p>
             </div>
           </div>
         </div>
@@ -63,7 +77,10 @@ const MyPage = () => {
             <p className="text-xl font-head text-white">
               {pointData?.point_balance.toLocaleString() ?? 0} 포인트
             </p>
-            <button className="bg-secondary text-white items-center px-3 py-1 rounded-lg hover:bg-secondary transition-colors font-bold">
+            <button
+              onClick={goToExchange}
+              className="bg-secondary text-white items-center px-3 py-1 rounded-lg hover:bg-secondary transition-colors font-bold"
+            >
               환전하기
             </button>
           </div>
