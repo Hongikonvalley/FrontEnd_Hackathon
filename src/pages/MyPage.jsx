@@ -33,9 +33,9 @@ const MyPage = () => {
   });
 
   const { data: pointData, isLoading: isPointLoading } = useQuery({
-    queryKey: ['userPoints', testUserId], // queryKey에도 고정된 ID를 사용
-    queryFn: () => getUserPoints(testUserId),
-    enabled: !!testUserId, // 항상 실행되도록 보장
+    queryKey: ['userPoints', user?.user_id],
+    queryFn: () => getUserPoints(user.user_id),
+    enabled: !!user,
   });
 
   const goToExchange = () => {

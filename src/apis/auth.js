@@ -61,3 +61,16 @@ export const getMyReviews = async (userId) => {
     return [];
   }
 };
+
+export const getPointHistory = async (userId) => {
+  try {
+    // API 명세서에 나온 URI를 사용합니다.
+    const { data } = await instance.get(
+      `/api/v1/users/${userId}/points/history`
+    );
+    return data?.result ?? null;
+  } catch (e) {
+    console.error('[getPointHistory] API 요청 실패:', e);
+    return null;
+  }
+};
