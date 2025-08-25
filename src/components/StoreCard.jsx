@@ -11,7 +11,7 @@ const StoreCard = ({ store }) => {
 
   const nav = useNavigate();
   const onClickStore = () => {
-    nav(`/store/${stores.id}`);
+    nav(`/store/${store.id}`);
   };
 
   return (

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { getCurrentUser } from '../apis/auth';
 import KakaoMap from '../components/KakaoMap';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -17,6 +18,7 @@ import {
   FaTimes,
 } from 'react-icons/fa';
 import Header from '../components/Header';
+import { createReview, updateReview, deleteReview } from '../apis/reviews';
 import { useAuthStore } from '../stores/useAuthStore'; //로그인 여부를 확인한 후 리뷰 작성 가능
 
 const StoreDetail = () => {
@@ -24,6 +26,11 @@ const StoreDetail = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuthStore(); // 로그인 여부 확인
   const queryClient = useQueryClient(); // 👈 이 라인을 추가하세요.
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: getCurrentUser,
+  });
 
   const {
     data: store,
@@ -43,6 +50,7 @@ const StoreDetail = () => {
 
   const [showCopyAlert, setShowCopyAlert] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [editingReview, setEditingReview] = useState(null); // 수정할 리뷰 정보
   const [newReviewText, setNewReviewText] = useState('');
   const [newReviewRating, setNewReviewRating] = useState(5);
   const [visibleReviewCount, setVisibleReviewCount] = useState(3);
@@ -75,6 +83,36 @@ const StoreDetail = () => {
     },
   });
 
+  // --- 2. 리뷰 생성을 위한 useMutation ---
+  const createReviewMutation = useMutation({
+    mutationFn: (reviewData) => createReview(reviewData),
+    onSuccess: () => {
+      // 성공 시, 리뷰 목록을 다시 불러와 화면을 갱신합니다.
+      queryClient.invalidateQueries({ queryKey: ['storeReviews', id] });
+      setIsReviewModalOpen(false); // 모달 닫기
+    },
+    onError: () => alert('리뷰 작성에 실패했습니다.'),
+  });
+
+  // --- 3. 리뷰 수정을 위한 useMutation ---
+  const updateReviewMutation = useMutation({
+    mutationFn: (reviewData) => updateReview(reviewData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['storeReviews', id] });
+      setIsReviewModalOpen(false);
+    },
+    onError: () => alert('리뷰 수정에 실패했습니다.'),
+  });
+
+  // --- 4. 리뷰 삭제를 위한 useMutation ---
+  const deleteReviewMutation = useMutation({
+    mutationFn: (params) => deleteReview(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['storeReviews', id] });
+    },
+    onError: () => alert('리뷰 삭제에 실패했습니다.'),
+  });
+
   useEffect(() => {
     if (store) {
       setIsFavorited(store.user_context.is_favorite);
@@ -105,24 +143,53 @@ const StoreDetail = () => {
       alert('리뷰 내용을 입력해주세요.');
       return;
     }
-    const newReview = {
-      author: '나 (새로운 유저)',
-      rating: newReviewRating,
-      text: newReviewText,
-    };
-    setReviews([newReview, ...reviews]);
-    setIsReviewModalOpen(false);
-    setNewReviewText('');
-    setNewReviewRating(5);
+    if (!currentUser) {
+      alert('사용자 정보를 불러올 수 없습니다.');
+      return;
+    }
+    if (editingReview) {
+      // 수정 모드일 때
+      updateReviewMutation.mutate({
+        reviewId: editingReview.review_id,
+        rating: newReviewRating,
+        content: newReviewText,
+        userId: currentUser.user_id,
+      });
+    } else {
+      // 생성 모드일 때
+      createReviewMutation.mutate({
+        storeId: id,
+        rating: newReviewRating,
+        content: newReviewText,
+        userId: currentUser.user_id,
+      });
+    }
+  };
+
+  const handleDeleteReview = (reviewId) => {
+    if (window.confirm('정말로 이 리뷰를 삭제하시겠습니까?')) {
+      if (!currentUser) {
+        alert('사용자 정보를 불러올 수 없습니다.');
+        return;
+      }
+      deleteReviewMutation.mutate({ reviewId, userId: currentUser.user_id });
+    }
   };
 
   // 3. 리뷰 작성창을 여는 핸들러 함수 생성
-  const handleOpenReviewModal = () => {
+  const handleOpenReviewModal = (review = null) => {
     if (!isLoggedIn) {
       alert('로그인이 필요한 기능입니다.');
-      navigate('/'); // 로그인 페이지로 이동
+      navigate('/');
       return;
     }
+
+    // 'review' 객체가 있으면 수정 모드, 없으면(null) 생성 모드로 설정합니다.
+    setEditingReview(review);
+    // 수정 모드일 때는 기존 내용을, 생성 모드일 때는 빈 칸으로 채웁니다.
+    setNewReviewText(review ? review.content : '');
+    setNewReviewRating(review ? review.rating : 5);
+
     setIsReviewModalOpen(true);
   };
 
@@ -276,7 +343,7 @@ const StoreDetail = () => {
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-4">
             <h2 className="text-2xl font-bold text-black">방문자 리뷰</h2>
-            <button onClick={() => setIsReviewModalOpen(true)}>
+            <button onClick={() => handleOpenReviewModal()}>
               <img
                 src="/Pencil.png"
                 alt="리뷰 작성"
@@ -305,7 +372,7 @@ const StoreDetail = () => {
           <div className="space-y-4">
             {/* slice를 사용하여 visibleReviewCount 개수만큼만 리뷰를 표시 */}
             {reviews.slice(0, visibleReviewCount).map((review) => (
-              <div key={review.id} className="bg-gray-50 p-4 rounded-lg">
+              <div key={review.review_id} className="bg-gray-50 p-4 rounded-lg">
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-semibold">{review.user_nickname}</span>
                   <div className="flex items-center gap-1">
@@ -314,6 +381,22 @@ const StoreDetail = () => {
                   </div>
                 </div>
                 <p className="text-gray-800">{review.content}</p>
+                {currentUser?.user_id === review.user_id && (
+                  <div className="flex justify-end gap-2 mt-2 text-sm">
+                    <button
+                      onClick={() => handleOpenReviewModal(review)}
+                      className="text-gray-500 hover:underline"
+                    >
+                      수정
+                    </button>
+                    <button
+                      onClick={() => handleDeleteReview(review.review_id)}
+                      className="text-red-500 hover:underline"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
