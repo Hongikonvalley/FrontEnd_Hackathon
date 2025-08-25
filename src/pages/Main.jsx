@@ -17,11 +17,15 @@ const Main = () => {
   // 나중엔 메타 API(/search/filter)로 대체 가능
   // const timeSlots = ['06:00-07:00', '07:00-08:00', '08:00-09:00'];
   const typeSlots = [
-    { code: 'Coffee', label: '카페', icon: './Coffee.svg' },
-    { code: 'Bakery', label: '베이커리', icon: './Bakery.svg' },
-    { code: 'Hamburger', label: '양식', icon: './Hamburger.svg' },
-    { code: 'Soup_Plate', label: '한식', icon: './Soup_Plate.svg' },
-    { code: 'View_More', label: '더보기', icon: './View_More.svg' },
+    { code: 'Coffee', label: '카페', icon: './Coffee.svg', id: 'cafe' },
+    {
+      code: 'Bakery',
+      label: '베이커리',
+      icon: './Bakery.svg',
+      id: 'bakery',
+    },
+    { code: 'Salad', label: '샐러드', icon: './Salad.svg', id: 'salad' },
+    { code: 'Brunch', label: '브런치', icon: './Brunch.svg', id: 'brunch' },
   ];
 
   const handleTimeChange = (label) => {
@@ -29,10 +33,12 @@ const Main = () => {
     setSelectedTime(label);
   };
 
-  const handleTypeSelect = (label) => {
-    console.log('누름!');
-    setSelectedCategory(label);
-    console.log({ selectedCategory });
+  const handleTypeSelect = (catId) => {
+    const params = {};
+    if (selectedTime) params.time = selectedTime;
+    if (selectedSale) params.sale = '1';
+    params.category_id = catId; // ✅ 카테고리 추가
+    navigate({ pathname: '/stores', search: `?${createSearchParams(params)}` });
   };
 
   const goToStores = () => {
@@ -112,16 +118,24 @@ const Main = () => {
         <div className="mx-[30px] mt-[30px]">
           {' '}
           <div className="font-semibold ">메뉴가 고민이라면?</div>
-          <div className="grid grid-cols-5 gap-[10px] m-[5px]">
-            {typeSlots.map(({ code, label, icon }) => (
+          <div className="grid grid-cols-4 gap-[10px] m-[5px]">
+            {typeSlots.map(({ code, label, icon, id }) => (
               <FilterButton
                 iconOnly={true}
                 isrc={icon}
                 key={code}
                 onClick={() => {
-                  handleTypeSelect(code);
-                  goToStores();
+                  handleTypeSelect(id);
                 }}
+                // onClick={() => {
+                //   const params = {};
+                //   if (selectedTime) params.time = selectedTime;
+                //   params.category = id; // ✅ cat_coffee 처럼 id로!
+                //   navigate({
+                //     pathname: '/stores',
+                //     search: `?${createSearchParams(params)}`,
+                //   });
+                // }}
                 label={label}
               />
             ))}
